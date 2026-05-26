@@ -50,3 +50,15 @@ Relevant variables (all have defaults in `docker-compose.yml`):
 - `JWT_SECRET` (required — no default)
 - `JWT_EXPIRATION`
 - `APP_UID` / `APP_GID` — pass `$(id -u)` / `$(id -g)` to avoid permission conflicts on bind-mounts
+
+
+## Screenshots
+<img width="1807" height="861" alt="2" src="https://github.com/user-attachments/assets/c82fd38c-76b2-435f-a759-6de4147f03a3" />
+
+<img width="1826" height="850" alt="3" src="https://github.com/user-attachments/assets/002c31c9-f3e9-4ff2-89f7-c2765004bf4a" />
+
+<img width="1881" height="856" alt="4" src="https://github.com/user-attachments/assets/7e87a228-0c99-4084-8150-b3da22454c8e" />
+
+<img width="1878" height="858" alt="5" src="https://github.com/user-attachments/assets/6634b55e-ccf3-4407-a5a3-79c0193bf2af" />
+
+

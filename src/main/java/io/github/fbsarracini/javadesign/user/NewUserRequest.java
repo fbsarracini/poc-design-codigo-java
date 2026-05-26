@@ -1,5 +1,6 @@
 package io.github.fbsarracini.javadesign.user;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -9,7 +10,7 @@ public record NewUserRequest(
         @NotBlank String userName,
         @NotBlank @Email String email,
         @NotBlank @Size(min = 12) String password
-) implements NewUserData {
+) implements @Valid NewUserData {
 
     @Override
     public String getEmail() {

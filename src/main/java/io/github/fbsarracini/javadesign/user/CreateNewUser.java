@@ -2,6 +2,7 @@ package io.github.fbsarracini.javadesign.user;
 
 import io.github.fbsarracini.javadesign.UseCase;
 import io.github.fbsarracini.javadesign.exception.UnprocessableException;
+import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ public class CreateNewUser {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User execute(NewUserData newUserData) {
+    public User execute(@Valid NewUserData newUserData) {
         userRepository.findByEmail(newUserData.getEmail())
                 .ifPresent(u -> { throw new UnprocessableException(); });
 

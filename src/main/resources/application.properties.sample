@@ -1,0 +1,19 @@
+# Copie este arquivo para application.properties (mesmo diretório) e ajuste os valores.
+# Os valores ${VAR:default} são lidos de variáveis de ambiente, com fallback após os ":".
+
+spring.application.name=poc-design-codigo-java
+
+# Banco de dados (PostgreSQL)
+spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/poc_design}
+spring.datasource.username=${DB_USERNAME:poc_user}
+spring.datasource.password=${DB_PASSWORD:poc_pass}
+
+spring.jpa.hibernate.ddl-auto=validate
+
+# JWT — troque o secret por um valor seguro em produção (mínimo 256 bits)
+jwt.secret=${JWT_SECRET:this-is-a-very-long-secret-key-for-jwt-that-is-at-least-256-bits}
+jwt.expiration=86400000
+
+# Actuator — só expõe /actuator/health (usado pelo healthcheck do Docker)
+management.endpoints.web.exposure.include=health
+management.endpoint.health.show-details=never

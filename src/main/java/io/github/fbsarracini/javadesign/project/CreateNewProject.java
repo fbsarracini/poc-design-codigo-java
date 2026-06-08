@@ -1,49 +1,46 @@
-package io.github.fbsarracini.javadesign.invite;
+package io.github.fbsarracini.javadesign.project;
 
 import io.github.fbsarracini.javadesign.UseCase;
 import io.github.fbsarracini.javadesign.account.Account;
 import io.github.fbsarracini.javadesign.account.AccountRepository;
 import io.github.fbsarracini.javadesign.account.Membership;
 import io.github.fbsarracini.javadesign.account.MembershipRepository;
-import io.github.fbsarracini.javadesign.user.User;
 import io.github.fbsarracini.javadesign.exception.ForbiddenException;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
+import io.github.fbsarracini.javadesign.user.User;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 
-import java.time.LocalDate;
-
 @UseCase
-public class GenerateNewInvite {
+public class CreateNewProject {
 
     private final AccountRepository accountRepository;
     private final MembershipRepository membershipRepository;
-    private final InviteRepository inviteRepository;
+    private final ProjectRepository projectRepository;
+    private final ProjectMembershipRepository projectMembershipRepository;
 
-    public GenerateNewInvite(AccountRepository accountRepository,
-                             MembershipRepository membershipRepository,
-                             InviteRepository inviteRepository) {
+    public CreateNewProject(AccountRepository accountRepository,
+                            MembershipRepository membershipRepository,
+                            ProjectRepository projectRepository,
+                            ProjectMembershipRepository projectMembershipRepository) {
         this.accountRepository = accountRepository;
         this.membershipRepository = membershipRepository;
-        this.inviteRepository = inviteRepository;
+        this.projectRepository = projectRepository;
+        this.projectMembershipRepository = projectMembershipRepository;
     }
 
     @Transactional
-    public void execute(@Positive Long accountId, User loggedUser, @Valid NewInviteData newInviteData) {
+    public Project execute(@Positive Long accountId, User loggedUser, @Valid NewProjectData newProjectData) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(NotFoundException::new);
 
         membershipRepository.findByAccountAndUser(account, loggedUser)
-                .filter(Membership::canInvite)
+                .filter(Membership::canCreateProject)
                 .orElseThrow(ForbiddenException::new);
 
-        if (inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
-                account, newInviteData.email(), InviteStatus.PENDING, LocalDate.now())) {
-            throw new IllegalArgumentException("já existe um convite pendente para este email");
-        }
-
-        inviteRepository.save(newInviteData.toNewInvite(account));
+        Project project = projectRepository.save(newProjectData.toNewProject(account));
+        projectMembershipRepository.save(new ProjectMembership(project, loggedUser));
+        return project;
     }
-
 }

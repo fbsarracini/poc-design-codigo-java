@@ -23,7 +23,7 @@ public class GenerateNewInviteController {
     }
 
     @PostMapping("/api/accounts/{accountId}/invites")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void execute(@PathVariable @Positive Long accountId,
                         @RequestBody @Valid NewInviteRequest request,
                         @AuthenticationPrincipal User loggedUser) {

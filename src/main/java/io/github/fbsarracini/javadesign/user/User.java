@@ -33,6 +33,7 @@ public class User implements UserDetails {
     }
 
     public Long getId() { return id; }
+    public String getName() { return name; }
 
     @Override
     public String getUsername() {

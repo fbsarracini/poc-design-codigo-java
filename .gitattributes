@@ -1,2 +1,2 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
+# Linha LF (Linux) para todos os arquivos de texto
+* text=auto eol=lf

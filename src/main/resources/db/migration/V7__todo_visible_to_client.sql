@@ -1,0 +1,2 @@
+ALTER TABLE todos
+    ADD COLUMN visible_to_client BOOLEAN NOT NULL DEFAULT FALSE;

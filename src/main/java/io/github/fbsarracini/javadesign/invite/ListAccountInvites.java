@@ -5,32 +5,30 @@ import io.github.fbsarracini.javadesign.account.Account;
 import io.github.fbsarracini.javadesign.account.AccountRepository;
 import io.github.fbsarracini.javadesign.account.Membership;
 import io.github.fbsarracini.javadesign.account.MembershipRepository;
-import io.github.fbsarracini.javadesign.user.User;
 import io.github.fbsarracini.javadesign.exception.ForbiddenException;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
+import io.github.fbsarracini.javadesign.user.User;
 import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @UseCase
-public class GenerateNewInvite {
+public class ListAccountInvites {
 
     private final AccountRepository accountRepository;
     private final MembershipRepository membershipRepository;
     private final InviteRepository inviteRepository;
 
-    public GenerateNewInvite(AccountRepository accountRepository,
-                             MembershipRepository membershipRepository,
-                             InviteRepository inviteRepository) {
+    public ListAccountInvites(AccountRepository accountRepository,
+                              MembershipRepository membershipRepository,
+                              InviteRepository inviteRepository) {
         this.accountRepository = accountRepository;
         this.membershipRepository = membershipRepository;
         this.inviteRepository = inviteRepository;
     }
 
-    @Transactional
-    public void execute(@Positive Long accountId, User loggedUser, @Valid NewInviteData newInviteData) {
+    public List<InviteSummaryResponse> execute(@Positive Long accountId, User loggedUser) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(NotFoundException::new);
 
@@ -38,12 +36,9 @@ public class GenerateNewInvite {
                 .filter(Membership::canInvite)
                 .orElseThrow(ForbiddenException::new);
 
-        if (inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
-                account, newInviteData.email(), InviteStatus.PENDING, LocalDate.now())) {
-            throw new IllegalArgumentException("já existe um convite pendente para este email");
-        }
-
-        inviteRepository.save(newInviteData.toNewInvite(account));
+        return inviteRepository.findByAccountAndStatusAndExpirationDateGreaterThanEqual(account, InviteStatus.PENDING, LocalDate.now())
+                .stream()
+                .map(InviteSummaryResponse::of)
+                .toList();
     }
-
 }

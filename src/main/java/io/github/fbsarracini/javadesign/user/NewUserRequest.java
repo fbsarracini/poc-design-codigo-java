@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 public record NewUserRequest(
-        @NotBlank String userName,
+        @NotBlank String name,
         @NotBlank @Email String email,
         @NotBlank @Size(min = 12) String password
 ) implements @Valid NewUserData {
@@ -19,6 +19,6 @@ public record NewUserRequest(
 
     @Override
     public User toNewUser(PasswordEncoder passwordEncoder) {
-        return new User(userName, email, passwordEncoder.encode(password));
+        return new User(name, email, passwordEncoder.encode(password));
     }
 }

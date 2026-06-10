@@ -10,12 +10,12 @@ import io.github.fbsarracini.javadesign.project.ProjectRepository;
 import io.github.fbsarracini.javadesign.user.User;
 import io.github.fbsarracini.javadesign.user.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.Optional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 
 @UseCase
 public class AddTodoToProject {
@@ -54,7 +54,9 @@ public class AddTodoToProject {
                     return userRepository.findById(id).orElseThrow(NotFoundException::new);
                 });
 
-        Todo todo = todoRepository.save(newTodoData.toNewTodo(project, assignee.orElse(null)));
+        Todo todo = todoRepository.save(
+                assignee.map(user -> newTodoData.toNewTodo(project, user))
+                        .orElseGet(() -> newTodoData.toNewTodo(project)));
         AppLog.logger(log).who(loggedUser).does("adicionar todo").on("project=" + projectId + " todo=" + todo.getId()).info();
         return todo;
     }

@@ -22,9 +22,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -83,7 +81,7 @@ class AddTodoToProjectTest {
         Todo result = addTodoToProject.execute(1L, actor, request);
 
         assertThat(result.getAssignee()).isNull();
-        verify(userRepository, never()).findById(anyLong());
+        verifyNoInteractions(userRepository);
     }
 
     @Test
@@ -131,5 +129,47 @@ class AddTodoToProjectTest {
         Todo result = addTodoToProject.execute(1L, actor, request);
 
         assertThat(result.isVisibleToClient()).isTrue();
+    }
+
+    @Test
+    @DisplayName("deve adicionar tarefa não visível para client por padrão")
+    void shouldAddTodoNotVisibleToClientByDefault() {
+        NewTodoData request = new NewTodoRequest("Tarefa", null, null, false);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMembershipRepository.existsByProjectAndUser(project, actor)).thenReturn(true);
+        ArgumentCaptor<Todo> todoCaptor = ArgumentCaptor.forClass(Todo.class);
+        when(todoRepository.save(todoCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        Todo result = addTodoToProject.execute(1L, actor, request);
+
+        assertThat(result.isVisibleToClient()).isFalse();
+    }
+
+    @Test
+    @DisplayName("deve vincular tarefa ao projeto correto")
+    void shouldLinkTodoToCorrectProject() {
+        NewTodoData request = new NewTodoRequest("Tarefa", null, null, false);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMembershipRepository.existsByProjectAndUser(project, actor)).thenReturn(true);
+        ArgumentCaptor<Todo> todoCaptor = ArgumentCaptor.forClass(Todo.class);
+        when(todoRepository.save(todoCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        Todo result = addTodoToProject.execute(1L, actor, request);
+
+        assertThat(result.getProject()).isEqualTo(project);
+    }
+
+    @Test
+    @DisplayName("deve criar tarefa não concluída")
+    void shouldCreateTodoAsNotCompleted() {
+        NewTodoData request = new NewTodoRequest("Tarefa", null, null, false);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMembershipRepository.existsByProjectAndUser(project, actor)).thenReturn(true);
+        ArgumentCaptor<Todo> todoCaptor = ArgumentCaptor.forClass(Todo.class);
+        when(todoRepository.save(todoCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        Todo result = addTodoToProject.execute(1L, actor, request);
+
+        assertThat(result.isCompleted()).isFalse();
     }
 }

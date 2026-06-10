@@ -5,5 +5,6 @@ import io.github.fbsarracini.javadesign.user.User;
 
 public interface NewTodoData {
     Long assigneeId();
+    Todo toNewTodo(Project project);
     Todo toNewTodo(Project project, User assignee);
 }

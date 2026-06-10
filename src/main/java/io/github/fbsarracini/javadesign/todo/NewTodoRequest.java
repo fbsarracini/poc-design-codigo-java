@@ -15,6 +15,11 @@ public record NewTodoRequest(
 ) implements @Valid NewTodoData {
 
     @Override
+    public Todo toNewTodo(Project project) {
+        return new Todo(title, project, null, dueDate, visibleToClient);
+    }
+
+    @Override
     public Todo toNewTodo(Project project, User assignee) {
         return new Todo(title, project, assignee, dueDate, visibleToClient);
     }

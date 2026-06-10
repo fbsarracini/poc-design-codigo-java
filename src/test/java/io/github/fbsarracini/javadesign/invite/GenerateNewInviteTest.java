@@ -23,11 +23,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -158,7 +157,9 @@ class GenerateNewInviteTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("já existe um convite pendente para este email");
 
-        verify(inviteRepository, never()).save(any(Invite.class));
+        verify(inviteRepository).existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now()));
+        verifyNoMoreInteractions(inviteRepository);
     }
 
     @Test
@@ -193,6 +194,8 @@ class GenerateNewInviteTest {
         assertThatThrownBy(() -> generateNewInvite.execute(1L, admin, ownerData))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        verify(inviteRepository, never()).save(any(Invite.class));
+        verify(inviteRepository).existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now()));
+        verifyNoMoreInteractions(inviteRepository);
     }
 }

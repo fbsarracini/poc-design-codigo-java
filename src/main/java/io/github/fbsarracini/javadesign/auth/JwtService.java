@@ -53,6 +53,7 @@ public class JwtService {
             Jwts.parser().verifyWith(key()).build().parseSignedClaims(token);
             return true;
         } catch (JwtException e) {
+            AppLog.logger(log).system().does("validar token jwt").failed(e.getMessage()).debug();
             return false;
         }
     }

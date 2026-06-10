@@ -15,6 +15,8 @@ import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 @UseCase
 public class AddTodoToProject {
 
@@ -46,14 +48,13 @@ public class AddTodoToProject {
             throw new ForbiddenException();
         }
 
-        User assignee = null;
-        if (newTodoData.assigneeId() != null) {
-            AppLog.logger(log).who(loggedUser).does("adicionar todo").on("assigneeId=" + newTodoData.assigneeId()).debug();
-            assignee = userRepository.findById(newTodoData.assigneeId())
-                    .orElseThrow(NotFoundException::new);
-        }
+        Optional<User> assignee = Optional.ofNullable(newTodoData.assigneeId())
+                .map(id -> {
+                    AppLog.logger(log).who(loggedUser).does("adicionar todo").on("assigneeId=" + id).debug();
+                    return userRepository.findById(id).orElseThrow(NotFoundException::new);
+                });
 
-        Todo todo = todoRepository.save(newTodoData.toNewTodo(project, assignee));
+        Todo todo = todoRepository.save(newTodoData.toNewTodo(project, assignee.orElse(null)));
         AppLog.logger(log).who(loggedUser).does("adicionar todo").on("project=" + projectId + " todo=" + todo.getId()).info();
         return todo;
     }

@@ -77,8 +77,8 @@ class AcceptInviteTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("membro");
 
-        verify(inviteRepository, never()).save(any());
-        verify(membershipRepository, never()).save(any());
+        verify(inviteRepository, never()).save(any(Invite.class));
+        verify(membershipRepository, never()).save(any(Membership.class));
     }
 
     @Test
@@ -91,8 +91,8 @@ class AcceptInviteTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("utilizado");
 
-        verify(inviteRepository, never()).save(any());
-        verify(membershipRepository, never()).save(any());
+        verify(inviteRepository, never()).save(any(Invite.class));
+        verify(membershipRepository, never()).save(any(Membership.class));
     }
 
     @Test
@@ -105,7 +105,7 @@ class AcceptInviteTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("email");
 
-        verify(inviteRepository, never()).save(any());
-        verify(membershipRepository, never()).save(any());
+        verify(inviteRepository, never()).save(any(Invite.class));
+        verify(membershipRepository, never()).save(any(Membership.class));
     }
 }

@@ -34,7 +34,6 @@ public class ListAccountMembers {
             throw new ForbiddenException();
         }
 
-        AppLog.logger(log).who(loggedUser).does("listar membros").on("account=" + accountId).debug();
         List<MemberSummaryResponse> result = membershipRepository.findByAccount(account)
                 .stream()
                 .map(MemberSummaryResponse::of)

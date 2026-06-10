@@ -82,7 +82,7 @@ class AddUserToProjectTest {
 
         addUserToProject.execute(1L, admin, "target@test.com");
 
-        verify(projectMembershipRepository, never()).save(any());
+        verify(projectMembershipRepository, never()).save(any(ProjectMembership.class));
     }
 
     @Test

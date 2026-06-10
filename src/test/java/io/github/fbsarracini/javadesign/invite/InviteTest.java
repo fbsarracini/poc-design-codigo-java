@@ -6,6 +6,7 @@ import io.github.fbsarracini.javadesign.account.Role;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -26,6 +27,7 @@ class InviteTest {
     }
 
     @Test
+    @DisplayName("deve criar convite com status pendente")
     void shouldCreatePendingInvite() {
         Invite invite = new Invite("joao@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
 
@@ -35,24 +37,28 @@ class InviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando data de expiração é hoje")
     void shouldThrowWhenExpirationDateIsToday() {
         assertThatThrownBy(() -> new Invite("joao@test.com", LocalDate.now(), account, Role.MEMBER))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando data de expiração é no passado")
     void shouldThrowWhenExpirationDateIsInPast() {
         assertThatThrownBy(() -> new Invite("joao@test.com", LocalDate.now().minusDays(1), account, Role.MEMBER))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando role é Owner")
     void shouldThrowWhenRoleIsOwner() {
         assertThatThrownBy(() -> new Invite("joao@test.com", LocalDate.now().plusDays(7), account, Role.OWNER))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
+    @DisplayName("deve aceitar convite com sucesso")
     void shouldAcceptInviteSuccessfully() {
         Invite invite = new Invite("joao@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
 
@@ -65,6 +71,7 @@ class InviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção ao aceitar convite já aceito")
     void shouldThrowWhenAcceptingAlreadyAcceptedInvite() {
         Invite invite = new Invite("joao@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
         invite.accept(user);
@@ -75,6 +82,7 @@ class InviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção ao aceitar convite revogado")
     void shouldThrowWhenAcceptingRevokedInvite() {
         Invite invite = new Invite("joao@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
         invite.revoke();
@@ -85,6 +93,7 @@ class InviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção ao aceitar convite expirado")
     void shouldThrowWhenAcceptingExpiredInvite() throws Exception {
         Invite invite = new Invite("joao@test.com", LocalDate.now().plusDays(1), account, Role.MEMBER);
         Field field = Invite.class.getDeclaredField("expirationDate");
@@ -97,6 +106,7 @@ class InviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção ao aceitar com email incorreto")
     void shouldThrowWhenAcceptingWithWrongEmail() {
         Invite invite = new Invite("outro@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
 
@@ -106,6 +116,7 @@ class InviteTest {
     }
 
     @Test
+    @DisplayName("deve revogar convite com sucesso")
     void shouldRevokeInviteSuccessfully() {
         Invite invite = new Invite("joao@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
 
@@ -115,6 +126,7 @@ class InviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção ao revogar convite já aceito")
     void shouldThrowWhenRevokingAcceptedInvite() {
         Invite invite = new Invite("joao@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
         invite.accept(user);
@@ -125,6 +137,7 @@ class InviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção ao revogar convite já revogado")
     void shouldThrowWhenRevokingAlreadyRevokedInvite() {
         Invite invite = new Invite("joao@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
         invite.revoke();

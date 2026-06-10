@@ -10,6 +10,7 @@ import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,11 +27,15 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ListAccountProjectsTest {
 
-    @Mock private AccountRepository accountRepository;
-    @Mock private MembershipRepository membershipRepository;
-    @Mock private ProjectRepository projectRepository;
+    @Mock
+    private AccountRepository accountRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
+    @Mock
+    private ProjectRepository projectRepository;
 
-    @InjectMocks private ListAccountProjects listAccountProjects;
+    @InjectMocks
+    private ListAccountProjects listAccountProjects;
 
     private User user;
     private Account account;
@@ -42,6 +47,7 @@ class ListAccountProjectsTest {
     }
 
     @Test
+    @DisplayName("deve retornar projetos da conta para member")
     void shouldReturnProjectsForMember() {
         Project p1 = project("Projeto 1", account);
         Project p2 = project("Projeto 2", account);
@@ -58,6 +64,7 @@ class ListAccountProjectsTest {
     }
 
     @Test
+    @DisplayName("deve retornar lista vazia quando não há projetos")
     void shouldReturnEmptyListWhenNoProjects() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, user))
@@ -70,6 +77,7 @@ class ListAccountProjectsTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando conta não encontrada")
     void shouldThrowWhenAccountNotFound() {
         when(accountRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -78,6 +86,7 @@ class ListAccountProjectsTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando usuário não é membro")
     void shouldThrowForbiddenWhenNotMember() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, user)).thenReturn(Optional.empty());

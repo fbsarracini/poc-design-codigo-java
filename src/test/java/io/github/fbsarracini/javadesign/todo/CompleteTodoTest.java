@@ -11,6 +11,7 @@ import io.github.fbsarracini.javadesign.project.ProjectMembershipRepository;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,11 +28,15 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CompleteTodoTest {
 
-    @Mock private TodoRepository todoRepository;
-    @Mock private ProjectMembershipRepository projectMembershipRepository;
-    @Mock private MembershipRepository membershipRepository;
+    @Mock
+    private TodoRepository todoRepository;
+    @Mock
+    private ProjectMembershipRepository projectMembershipRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
 
-    @InjectMocks private CompleteTodo completeTodo;
+    @InjectMocks
+    private CompleteTodo completeTodo;
 
     private User assignee;
     private User adminUser;
@@ -51,6 +56,7 @@ class CompleteTodoTest {
     }
 
     @Test
+    @DisplayName("deve completar quando ator é o responsável")
     void shouldCompleteWhenActorIsAssignee() {
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
         when(projectMembershipRepository.existsByProjectAndUser(project, assignee)).thenReturn(true);
@@ -64,6 +70,7 @@ class CompleteTodoTest {
     }
 
     @Test
+    @DisplayName("deve completar quando ator é admin")
     void shouldCompleteWhenActorIsAdmin() {
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
         when(projectMembershipRepository.existsByProjectAndUser(project, adminUser)).thenReturn(true);
@@ -76,6 +83,7 @@ class CompleteTodoTest {
     }
 
     @Test
+    @DisplayName("deve completar quando ator é responsável e admin")
     void shouldCompleteWhenActorIsAssigneeAndAdmin() {
         User adminAssignee = user("AdminAssignee", "adminassignee@test.com");
         Todo todoAssignedToAdmin = todo("Tarefa", project, adminAssignee);
@@ -90,6 +98,7 @@ class CompleteTodoTest {
     }
 
     @Test
+    @DisplayName("deve completar quando ator é owner")
     void shouldCompleteWhenActorIsOwner() {
         User ownerUser = user("Owner", "owner@test.com");
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
@@ -103,6 +112,7 @@ class CompleteTodoTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando tarefa não encontrada")
     void shouldThrowWhenTodoNotFound() {
         when(todoRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -111,6 +121,7 @@ class CompleteTodoTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando não é membro do projeto")
     void shouldThrowForbiddenWhenNotProjectMember() {
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
         when(projectMembershipRepository.existsByProjectAndUser(project, memberUser)).thenReturn(false);
@@ -120,6 +131,7 @@ class CompleteTodoTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando member não é responsável nem admin")
     void shouldThrowForbiddenWhenMemberIsNeitherAssigneeNorAdmin() {
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
         when(projectMembershipRepository.existsByProjectAndUser(project, memberUser)).thenReturn(true);
@@ -131,6 +143,7 @@ class CompleteTodoTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando membro do projeto não tem membership na conta")
     void shouldThrowForbiddenWhenProjectMemberHasNoAccountMembership() {
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
         when(projectMembershipRepository.existsByProjectAndUser(project, memberUser)).thenReturn(true);

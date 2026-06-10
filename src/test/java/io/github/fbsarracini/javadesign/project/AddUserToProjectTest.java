@@ -10,6 +10,7 @@ import io.github.fbsarracini.javadesign.user.User;
 import io.github.fbsarracini.javadesign.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -29,12 +30,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AddUserToProjectTest {
 
-    @Mock private ProjectRepository projectRepository;
-    @Mock private MembershipRepository membershipRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private ProjectMembershipRepository projectMembershipRepository;
+    @Mock
+    private ProjectRepository projectRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private ProjectMembershipRepository projectMembershipRepository;
 
-    @InjectMocks private AddUserToProject addUserToProject;
+    @InjectMocks
+    private AddUserToProject addUserToProject;
 
     private User admin;
     private User memberActor;
@@ -52,6 +58,7 @@ class AddUserToProjectTest {
     }
 
     @Test
+    @DisplayName("deve adicionar usuário ao projeto com sucesso")
     void shouldAddUserToProjectSuccessfully() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, admin))
@@ -71,6 +78,7 @@ class AddUserToProjectTest {
     }
 
     @Test
+    @DisplayName("deve ser idempotente quando usuário já está no projeto")
     void shouldBeIdempotentWhenUserAlreadyInProject() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, admin))
@@ -86,6 +94,7 @@ class AddUserToProjectTest {
     }
 
     @Test
+    @DisplayName("deve adicionar usuário quando ator é owner")
     void shouldAddUserWhenActorIsOwner() {
         User owner = user("Owner", "owner@test.com");
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
@@ -106,6 +115,7 @@ class AddUserToProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando projeto não encontrado")
     void shouldThrowWhenProjectNotFound() {
         when(projectRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -114,6 +124,7 @@ class AddUserToProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando ator não tem membership")
     void shouldThrowForbiddenWhenActorHasNoMembership() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, admin)).thenReturn(Optional.empty());
@@ -123,6 +134,7 @@ class AddUserToProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando ator é member")
     void shouldThrowForbiddenWhenActorIsMember() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, memberActor))
@@ -133,6 +145,7 @@ class AddUserToProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando usuário alvo não encontrado")
     void shouldThrowWhenTargetUserNotFound() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, admin))
@@ -144,6 +157,7 @@ class AddUserToProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando alvo não é membro da conta")
     void shouldThrowWhenTargetIsNotAccountMember() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, admin))

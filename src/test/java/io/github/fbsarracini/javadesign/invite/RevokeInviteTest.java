@@ -9,6 +9,7 @@ import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,10 +26,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class RevokeInviteTest {
 
-    @Mock private InviteRepository inviteRepository;
-    @Mock private MembershipRepository membershipRepository;
+    @Mock
+    private InviteRepository inviteRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
 
-    @InjectMocks private RevokeInvite revokeInvite;
+    @InjectMocks
+    private RevokeInvite revokeInvite;
 
     private User admin;
     private User member;
@@ -44,6 +48,7 @@ class RevokeInviteTest {
     }
 
     @Test
+    @DisplayName("deve revogar convite quando ator é admin")
     void shouldRevokeInviteWhenAdmin() {
         when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, admin))
@@ -56,6 +61,7 @@ class RevokeInviteTest {
     }
 
     @Test
+    @DisplayName("deve revogar convite quando ator é owner")
     void shouldRevokeInviteWhenOwner() {
         User owner = user("Owner", "owner@test.com");
         when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
@@ -68,6 +74,7 @@ class RevokeInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando convite não encontrado")
     void shouldThrowWhenInviteNotFound() {
         when(inviteRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -76,6 +83,7 @@ class RevokeInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando usuário não tem membership")
     void shouldThrowForbiddenWhenNoMembership() {
         when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, admin)).thenReturn(Optional.empty());
@@ -85,6 +93,7 @@ class RevokeInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando member não pode revogar")
     void shouldThrowForbiddenWhenMemberCannotRevoke() {
         when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, member))
@@ -95,6 +104,7 @@ class RevokeInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando convite já foi aceito")
     void shouldThrowWhenInviteAlreadyAccepted() {
         User acceptingUser = user("Accepted", "target@test.com");
         invite.accept(acceptingUser);
@@ -108,6 +118,7 @@ class RevokeInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando convite já foi revogado")
     void shouldThrowWhenInviteAlreadyRevoked() {
         invite.revoke();
         when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));

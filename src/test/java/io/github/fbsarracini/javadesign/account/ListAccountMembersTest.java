@@ -5,6 +5,7 @@ import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,10 +22,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ListAccountMembersTest {
 
-    @Mock private AccountRepository accountRepository;
-    @Mock private MembershipRepository membershipRepository;
+    @Mock
+    private AccountRepository accountRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
 
-    @InjectMocks private ListAccountMembers listAccountMembers;
+    @InjectMocks
+    private ListAccountMembers listAccountMembers;
 
     private User user;
     private Account account;
@@ -36,6 +40,7 @@ class ListAccountMembersTest {
     }
 
     @Test
+    @DisplayName("deve retornar membros para um membro da conta")
     void shouldReturnMembersForMember() {
         User other = user("Other", "other@test.com");
         Membership m1 = membershipAs(account, user, Role.MEMBER);
@@ -51,6 +56,7 @@ class ListAccountMembersTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando conta não encontrada")
     void shouldThrowWhenAccountNotFound() {
         when(accountRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -59,6 +65,7 @@ class ListAccountMembersTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando usuário não é membro")
     void shouldThrowForbiddenWhenNotMember() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, user)).thenReturn(Optional.empty());

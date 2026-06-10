@@ -4,6 +4,7 @@ import io.github.fbsarracini.javadesign.exception.UnauthorizedException;
 import io.github.fbsarracini.javadesign.user.User;
 import io.github.fbsarracini.javadesign.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,11 +21,15 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AuthenticateUserTest {
 
-    @Mock private UserRepository userRepository;
-    @Mock private PasswordEncoder passwordEncoder;
-    @Mock private JwtService jwtService;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private JwtService jwtService;
 
-    @InjectMocks private AuthenticateUser authenticateUser;
+    @InjectMocks
+    private AuthenticateUser authenticateUser;
 
     private User user;
 
@@ -34,6 +39,7 @@ class AuthenticateUserTest {
     }
 
     @Test
+    @DisplayName("deve retornar token quando credenciais são válidas")
     void shouldReturnTokenWhenCredentialsValid() {
         when(userRepository.findByEmail("joao@test.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("raw", "encoded_password")).thenReturn(true);
@@ -45,6 +51,7 @@ class AuthenticateUserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando email não encontrado")
     void shouldThrowWhenEmailNotFound() {
         when(userRepository.findByEmail("naoexiste@test.com")).thenReturn(Optional.empty());
 
@@ -53,6 +60,7 @@ class AuthenticateUserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando senha incorreta")
     void shouldThrowWhenPasswordIncorrect() {
         when(userRepository.findByEmail("joao@test.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("errada", "encoded_password")).thenReturn(false);

@@ -1,6 +1,7 @@
 package io.github.fbsarracini.javadesign.user;
 
 import io.github.fbsarracini.javadesign.exception.UnprocessableException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
@@ -24,9 +25,11 @@ class CreateNewUserTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @InjectMocks private CreateNewUser createNewUser;
+    @InjectMocks
+    private CreateNewUser createNewUser;
 
     @Test
+    @DisplayName("deve criar usuário quando email não cadastrado")
     void shouldCreateUserWhenEmailNotRegistered() {
         NewUserRequest request = new NewUserRequest("João", "joao@test.com", "senha_longa_123");
         when(userRepository.findByEmail("joao@test.com")).thenReturn(Optional.empty());
@@ -41,6 +44,7 @@ class CreateNewUserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando email já cadastrado")
     void shouldThrowWhenEmailAlreadyRegistered() {
         NewUserRequest request = new NewUserRequest("João", "joao@test.com", "senha_longa_123");
         User existing = user("Existente", "joao@test.com");
@@ -51,6 +55,7 @@ class CreateNewUserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando nome do usuário é vazio")
     void shouldThrowWhenUserNameIsBlank() {
         NewUserRequest request = new NewUserRequest("", "joao@test.com", "senha_longa_123");
         when(userRepository.findByEmail("joao@test.com")).thenReturn(Optional.empty());

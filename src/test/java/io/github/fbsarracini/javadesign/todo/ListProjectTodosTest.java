@@ -12,6 +12,7 @@ import io.github.fbsarracini.javadesign.project.ProjectRepository;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,12 +32,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ListProjectTodosTest {
 
-    @Mock private ProjectRepository projectRepository;
-    @Mock private ProjectMembershipRepository projectMembershipRepository;
-    @Mock private MembershipRepository membershipRepository;
-    @Mock private TodoRepository todoRepository;
+    @Mock
+    private ProjectRepository projectRepository;
+    @Mock
+    private ProjectMembershipRepository projectMembershipRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
+    @Mock
+    private TodoRepository todoRepository;
 
-    @InjectMocks private ListProjectTodos listProjectTodos;
+    @InjectMocks
+    private ListProjectTodos listProjectTodos;
 
     private User memberUser;
     private User clientUser;
@@ -54,6 +60,7 @@ class ListProjectTodosTest {
     }
 
     @Test
+    @DisplayName("deve retornar todas as tarefas para member")
     void shouldReturnAllTodosForMember() {
         Page<Todo> page = mock(Page.class);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
@@ -69,6 +76,7 @@ class ListProjectTodosTest {
     }
 
     @Test
+    @DisplayName("deve retornar apenas tarefas visíveis para client")
     void shouldReturnOnlyVisibleTodosForClient() {
         Page<Todo> page = mock(Page.class);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
@@ -84,6 +92,7 @@ class ListProjectTodosTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando projeto não encontrado")
     void shouldThrowWhenProjectNotFound() {
         when(projectRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -92,6 +101,7 @@ class ListProjectTodosTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando não é membro do projeto")
     void shouldThrowForbiddenWhenNotProjectMember() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(projectMembershipRepository.existsByProjectAndUser(project, memberUser)).thenReturn(false);
@@ -101,6 +111,7 @@ class ListProjectTodosTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando não tem membership na conta")
     void shouldThrowForbiddenWhenNoAccountMembership() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(projectMembershipRepository.existsByProjectAndUser(project, memberUser)).thenReturn(true);

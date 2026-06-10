@@ -1,5 +1,6 @@
 package io.github.fbsarracini.javadesign.user;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -8,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class UserTest {
 
     @Test
+    @DisplayName("deve criar usuário com dados válidos")
     void shouldCreateUserWithValidData() {
         User user = new User("João", "joao@test.com", "senha123");
 
@@ -16,6 +18,7 @@ class UserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando nome é vazio")
     void shouldThrowWhenNameIsBlank() {
         assertThatThrownBy(() -> new User("", "joao@test.com", "senha123"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -23,6 +26,7 @@ class UserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando email é vazio")
     void shouldThrowWhenEmailIsBlank() {
         assertThatThrownBy(() -> new User("João", "", "senha123"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -30,6 +34,7 @@ class UserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando senha é vazia")
     void shouldThrowWhenPasswordIsBlank() {
         assertThatThrownBy(() -> new User("João", "joao@test.com", ""))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -37,6 +42,7 @@ class UserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando nome é nulo")
     void shouldThrowWhenNameIsNull() {
         assertThatThrownBy(() -> new User(null, "joao@test.com", "senha123"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -44,6 +50,7 @@ class UserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando email é nulo")
     void shouldThrowWhenEmailIsNull() {
         assertThatThrownBy(() -> new User("João", null, "senha123"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -51,6 +58,7 @@ class UserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando senha é nula")
     void shouldThrowWhenPasswordIsNull() {
         assertThatThrownBy(() -> new User("João", "joao@test.com", null))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -58,6 +66,7 @@ class UserTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando nome é espaço em branco")
     void shouldThrowWhenNameIsWhitespace() {
         assertThatThrownBy(() -> new User("   ", "joao@test.com", "senha123"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -65,6 +74,7 @@ class UserTest {
     }
 
     @Test
+    @DisplayName("deve considerar usuários iguais pelo email")
     void shouldConsiderUsersEqualByEmail() {
         User a = new User("João", "joao@test.com", "hash1");
         User b = new User("João Silva", "joao@test.com", "hash2");

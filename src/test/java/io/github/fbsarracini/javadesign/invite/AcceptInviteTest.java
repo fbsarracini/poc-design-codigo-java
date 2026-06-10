@@ -8,6 +8,7 @@ import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -27,10 +28,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AcceptInviteTest {
 
-    @Mock private InviteRepository inviteRepository;
-    @Mock private MembershipRepository membershipRepository;
+    @Mock
+    private InviteRepository inviteRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
 
-    @InjectMocks private AcceptInvite acceptInvite;
+    @InjectMocks
+    private AcceptInvite acceptInvite;
 
     private User user;
     private Account account;
@@ -44,6 +48,7 @@ class AcceptInviteTest {
     }
 
     @Test
+    @DisplayName("deve aceitar convite com sucesso")
     void shouldAcceptInviteSuccessfully() {
         when(inviteRepository.findByToken("tok")).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, user)).thenReturn(Optional.empty());
@@ -60,6 +65,7 @@ class AcceptInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando token não encontrado")
     void shouldThrowWhenTokenNotFound() {
         when(inviteRepository.findByToken("invalid")).thenReturn(Optional.empty());
 
@@ -68,6 +74,7 @@ class AcceptInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando usuário já é membro")
     void shouldThrowWhenUserAlreadyMember() {
         when(inviteRepository.findByToken("tok")).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, user))
@@ -82,6 +89,7 @@ class AcceptInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando convite foi revogado")
     void shouldThrowWhenInviteIsRevoked() {
         invite.revoke();
         when(inviteRepository.findByToken("tok")).thenReturn(Optional.of(invite));
@@ -96,6 +104,7 @@ class AcceptInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando email não corresponde ao convite")
     void shouldThrowWhenEmailDoesNotMatch() {
         Invite inviteForOther = pendingInvite("outro@test.com", account, Role.MEMBER);
         when(inviteRepository.findByToken("tok")).thenReturn(Optional.of(inviteForOther));

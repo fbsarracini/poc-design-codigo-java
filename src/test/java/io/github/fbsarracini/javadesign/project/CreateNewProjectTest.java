@@ -10,6 +10,7 @@ import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -27,12 +28,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CreateNewProjectTest {
 
-    @Mock private AccountRepository accountRepository;
-    @Mock private MembershipRepository membershipRepository;
-    @Mock private ProjectRepository projectRepository;
-    @Mock private ProjectMembershipRepository projectMembershipRepository;
+    @Mock
+    private AccountRepository accountRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
+    @Mock
+    private ProjectRepository projectRepository;
+    @Mock
+    private ProjectMembershipRepository projectMembershipRepository;
 
-    @InjectMocks private CreateNewProject createNewProject;
+    @InjectMocks
+    private CreateNewProject createNewProject;
 
     private User member;
     private User client;
@@ -48,6 +54,7 @@ class CreateNewProjectTest {
     }
 
     @Test
+    @DisplayName("deve criar projeto quando ator é member")
     void shouldCreateProjectWhenMemberCanCreate() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, member))
@@ -65,6 +72,7 @@ class CreateNewProjectTest {
     }
 
     @Test
+    @DisplayName("deve criar projeto quando ator é admin")
     void shouldCreateProjectWhenAdminCanCreate() {
         User admin = user("Admin", "admin@test.com");
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
@@ -79,6 +87,7 @@ class CreateNewProjectTest {
     }
 
     @Test
+    @DisplayName("deve criar projeto quando ator é owner")
     void shouldCreateProjectWhenOwnerCanCreate() {
         User owner = user("Owner", "owner@test.com");
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
@@ -93,6 +102,7 @@ class CreateNewProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando conta não encontrada")
     void shouldThrowWhenAccountNotFound() {
         when(accountRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -101,6 +111,7 @@ class CreateNewProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando client tenta criar projeto")
     void shouldThrowForbiddenWhenClientCannotCreateProject() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, client))
@@ -111,6 +122,7 @@ class CreateNewProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando usuário não tem membership")
     void shouldThrowForbiddenWhenNoMembership() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, member)).thenReturn(Optional.empty());

@@ -10,6 +10,7 @@ import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,11 +29,15 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ListAccountInvitesTest {
 
-    @Mock private AccountRepository accountRepository;
-    @Mock private MembershipRepository membershipRepository;
-    @Mock private InviteRepository inviteRepository;
+    @Mock
+    private AccountRepository accountRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
+    @Mock
+    private InviteRepository inviteRepository;
 
-    @InjectMocks private ListAccountInvites listAccountInvites;
+    @InjectMocks
+    private ListAccountInvites listAccountInvites;
 
     private User admin;
     private User member;
@@ -46,6 +51,7 @@ class ListAccountInvitesTest {
     }
 
     @Test
+    @DisplayName("deve retornar convites pendentes para admin")
     void shouldReturnPendingInvitesForAdmin() {
         Invite invite = pendingInvite("novo@test.com", account, Role.MEMBER);
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
@@ -62,6 +68,7 @@ class ListAccountInvitesTest {
     }
 
     @Test
+    @DisplayName("deve retornar convites pendentes para owner")
     void shouldReturnPendingInvitesForOwner() {
         User owner = user("Owner", "owner@test.com");
         Invite invite = pendingInvite("novo@test.com", account, Role.MEMBER);
@@ -78,6 +85,7 @@ class ListAccountInvitesTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando conta não encontrada")
     void shouldThrowWhenAccountNotFound() {
         when(accountRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -86,6 +94,7 @@ class ListAccountInvitesTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando usuário não tem membership")
     void shouldThrowForbiddenWhenNoMembership() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin)).thenReturn(Optional.empty());
@@ -95,6 +104,7 @@ class ListAccountInvitesTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando member não pode listar convites")
     void shouldThrowForbiddenWhenMemberCannotListInvites() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, member))

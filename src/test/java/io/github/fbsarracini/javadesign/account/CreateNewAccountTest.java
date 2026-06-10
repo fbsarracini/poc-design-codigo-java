@@ -3,6 +3,7 @@ package io.github.fbsarracini.javadesign.account;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,10 +19,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CreateNewAccountTest {
 
-    @Mock private AccountRepository accountRepository;
-    @Mock private MembershipRepository membershipRepository;
+    @Mock
+    private AccountRepository accountRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
 
-    @InjectMocks private CreateNewAccount createNewAccount;
+    @InjectMocks
+    private CreateNewAccount createNewAccount;
 
     private User owner;
 
@@ -31,6 +35,7 @@ class CreateNewAccountTest {
     }
 
     @Test
+    @DisplayName("deve criar conta e adicionar membership de owner")
     void shouldCreateAccountAndAddOwnerMembership() {
         NewAccountRequest request = new NewAccountRequest("Minha Conta");
         ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
@@ -50,6 +55,7 @@ class CreateNewAccountTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando nome da organização é vazio")
     void shouldThrowWhenOrganizationNameIsBlank() {
         NewAccountRequest request = new NewAccountRequest("");
 

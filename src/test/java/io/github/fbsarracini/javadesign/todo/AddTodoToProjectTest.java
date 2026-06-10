@@ -10,6 +10,7 @@ import io.github.fbsarracini.javadesign.user.User;
 import io.github.fbsarracini.javadesign.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -55,6 +56,7 @@ class AddTodoToProjectTest {
     }
 
     @Test
+    @DisplayName("deve adicionar tarefa com responsável")
     void shouldAddTodoWithAssignee() {
         NewTodoData request = new NewTodoRequest("Tarefa", 2L, null, false);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
@@ -70,6 +72,7 @@ class AddTodoToProjectTest {
     }
 
     @Test
+    @DisplayName("deve adicionar tarefa sem responsável")
     void shouldAddTodoWithoutAssignee() {
         NewTodoData request = new NewTodoRequest("Tarefa", null, null, false);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
@@ -84,6 +87,7 @@ class AddTodoToProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando projeto não encontrado")
     void shouldThrowWhenProjectNotFound() {
         NewTodoData request = new NewTodoRequest("Tarefa", null, null, false);
         when(projectRepository.findById(99L)).thenReturn(Optional.empty());
@@ -93,6 +97,7 @@ class AddTodoToProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando não é membro do projeto")
     void shouldThrowForbiddenWhenNotProjectMember() {
         NewTodoData request = new NewTodoRequest("Tarefa", null, null, false);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
@@ -103,6 +108,7 @@ class AddTodoToProjectTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando responsável não encontrado")
     void shouldThrowWhenAssigneeNotFound() {
         NewTodoData request = new NewTodoRequest("Tarefa", 99L, null, false);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
@@ -114,6 +120,7 @@ class AddTodoToProjectTest {
     }
 
     @Test
+    @DisplayName("deve adicionar tarefa visível para client")
     void shouldAddTodoVisibleToClient() {
         NewTodoData request = new NewTodoRequest("Tarefa Pública", null, null, true);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));

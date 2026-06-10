@@ -3,6 +3,7 @@ package io.github.fbsarracini.javadesign.account;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,9 +18,11 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ListMyAccountsTest {
 
-    @Mock private MembershipRepository membershipRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
 
-    @InjectMocks private ListMyAccounts listMyAccounts;
+    @InjectMocks
+    private ListMyAccounts listMyAccounts;
 
     private User user;
 
@@ -29,6 +32,7 @@ class ListMyAccountsTest {
     }
 
     @Test
+    @DisplayName("deve retornar contas do usuário")
     void shouldReturnAccountsForUser() {
         Account a1 = account("Conta 1");
         Account a2 = account("Conta 2");
@@ -44,6 +48,7 @@ class ListMyAccountsTest {
     }
 
     @Test
+    @DisplayName("deve retornar lista vazia quando usuário não tem contas")
     void shouldReturnEmptyListWhenUserHasNoAccounts() {
         when(membershipRepository.findByUser(user)).thenReturn(List.of());
 

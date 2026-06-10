@@ -10,6 +10,7 @@ import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import static io.github.fbsarracini.javadesign.TestFixtures.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -32,11 +33,15 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class GenerateNewInviteTest {
 
-    @Mock private AccountRepository accountRepository;
-    @Mock private MembershipRepository membershipRepository;
-    @Mock private InviteRepository inviteRepository;
+    @Mock
+    private AccountRepository accountRepository;
+    @Mock
+    private MembershipRepository membershipRepository;
+    @Mock
+    private InviteRepository inviteRepository;
 
-    @InjectMocks private GenerateNewInvite generateNewInvite;
+    @InjectMocks
+    private GenerateNewInvite generateNewInvite;
 
     private User admin;
     private User owner;
@@ -56,6 +61,7 @@ class GenerateNewInviteTest {
     }
 
     @Test
+    @DisplayName("deve gerar convite quando ator é admin e não há convite pendente")
     void shouldGenerateInviteWhenAdminAndNoPendingInvite() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))
@@ -73,6 +79,7 @@ class GenerateNewInviteTest {
     }
 
     @Test
+    @DisplayName("deve gerar convite quando ator é owner e não há convite pendente")
     void shouldGenerateInviteWhenOwnerAndNoPendingInvite() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, owner))
@@ -90,6 +97,7 @@ class GenerateNewInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando conta não encontrada")
     void shouldThrowWhenAccountNotFound() {
         when(accountRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -98,6 +106,7 @@ class GenerateNewInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando member tenta convidar")
     void shouldThrowForbiddenWhenMemberCannotInvite() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, member))
@@ -110,6 +119,7 @@ class GenerateNewInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando client tenta convidar")
     void shouldThrowForbiddenWhenClientCannotInvite() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, client))
@@ -122,6 +132,7 @@ class GenerateNewInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar Forbidden quando usuário não tem membership na conta")
     void shouldThrowForbiddenWhenUserHasNoMembership() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))
@@ -134,6 +145,7 @@ class GenerateNewInviteTest {
     }
 
     @Test
+    @DisplayName("deve lançar exceção quando já existe convite pendente para o email")
     void shouldThrowWhenPendingInviteAlreadyExists() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))

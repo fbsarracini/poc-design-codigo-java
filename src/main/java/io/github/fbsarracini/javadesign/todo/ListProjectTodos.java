@@ -56,10 +56,14 @@ public class ListProjectTodos {
 
         if (role == Role.CLIENT) {
             AppLog.logger(log).who(loggedUser).does("listar todos").on("project=" + projectId + " filtro=visibleToClient").debug();
-            return todoRepository.findByProjectAndVisibleToClient(project, true, pageable);
+            Page<Todo> result = todoRepository.findByProjectAndVisibleToClient(project, true, pageable);
+            AppLog.logger(log).who(loggedUser).does("listar todos").on("project=" + projectId + " filtro=visibleToClient").info();
+            return result;
         }
 
         AppLog.logger(log).who(loggedUser).does("listar todos").on("project=" + projectId).debug();
-        return todoRepository.findByProject(project, pageable);
+        Page<Todo> result = todoRepository.findByProject(project, pageable);
+        AppLog.logger(log).who(loggedUser).does("listar todos").on("project=" + projectId).info();
+        return result;
     }
 }

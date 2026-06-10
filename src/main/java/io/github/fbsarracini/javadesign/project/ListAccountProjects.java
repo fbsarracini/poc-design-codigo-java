@@ -42,9 +42,11 @@ public class ListAccountProjects {
         }
 
         AppLog.logger(log).who(loggedUser).does("listar projetos").on("account=" + accountId).debug();
-        return projectRepository.findByAccount(account)
+        List<ProjectSummaryResponse> result = projectRepository.findByAccount(account)
                 .stream()
                 .map(ProjectSummaryResponse::of)
                 .toList();
+        AppLog.logger(log).who(loggedUser).does("listar projetos").on("account=" + accountId).info();
+        return result;
     }
 }

@@ -46,9 +46,11 @@ public class ListAccountInvites {
                 });
 
         AppLog.logger(log).who(loggedUser).does("listar convites").on("account=" + accountId).debug();
-        return inviteRepository.findByAccountAndStatusAndExpirationDateGreaterThanEqual(account, InviteStatus.PENDING, LocalDate.now())
+        List<InviteSummaryResponse> result = inviteRepository.findByAccountAndStatusAndExpirationDateGreaterThanEqual(account, InviteStatus.PENDING, LocalDate.now())
                 .stream()
                 .map(InviteSummaryResponse::of)
                 .toList();
+        AppLog.logger(log).who(loggedUser).does("listar convites").on("account=" + accountId).info();
+        return result;
     }
 }

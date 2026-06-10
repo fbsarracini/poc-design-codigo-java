@@ -35,9 +35,11 @@ public class ListAccountMembers {
         }
 
         AppLog.logger(log).who(loggedUser).does("listar membros").on("account=" + accountId).debug();
-        return membershipRepository.findByAccount(account)
+        List<MemberSummaryResponse> result = membershipRepository.findByAccount(account)
                 .stream()
                 .map(MemberSummaryResponse::of)
                 .toList();
+        AppLog.logger(log).who(loggedUser).does("listar membros").on("account=" + accountId).info();
+        return result;
     }
 }

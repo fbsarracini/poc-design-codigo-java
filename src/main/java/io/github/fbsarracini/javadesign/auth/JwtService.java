@@ -1,9 +1,12 @@
 package io.github.fbsarracini.javadesign.auth;
 
+import io.github.fbsarracini.javadesign.log.AppLog;
 import io.github.fbsarracini.javadesign.user.User;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +17,8 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
+
     @Value("${jwt.secret}")
     private String secret;
 
@@ -21,12 +26,15 @@ public class JwtService {
     private long expiration;
 
     public String generateToken(User user) {
-        return Jwts.builder()
+        AppLog.logger(log).who(user).does("gerar token jwt").debug();
+        String token = Jwts.builder()
                 .subject(String.valueOf(user.getId()))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key())
                 .compact();
+        AppLog.logger(log).who(user).does("gerar token jwt").info();
+        return token;
     }
 
     public Long extractUserId(String token) {

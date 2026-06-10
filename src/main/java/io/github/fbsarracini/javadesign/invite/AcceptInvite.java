@@ -38,7 +38,7 @@ public class AcceptInvite {
         try {
             membership = invite.accept(loggedUser);
         } catch (IllegalArgumentException e) {
-            AppLog.logger(log).who(loggedUser).does("aceitar convite").on("invite=" + invite.getId()).failed(e.getMessage()).warn();
+            AppLog.logger(log).who(loggedUser).does("aceitar convite").on("invite=" + invite.getId() + " account=" + invite.getAccount().getId()).failed(e.getMessage()).warn();
             throw e;
         }
 

@@ -8,13 +8,13 @@ import io.github.fbsarracini.javadesign.exception.ForbiddenException;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,17 +37,17 @@ class RevokeInviteTest {
 
     @BeforeEach
     void setUp() {
-        admin = new User("Admin", "admin@test.com", "hash");
-        member = new User("Member", "member@test.com", "hash");
-        account = new Account("Conta Teste");
-        invite = new Invite("target@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
+        admin = user("Admin", "admin@test.com");
+        member = user("Member", "member@test.com");
+        account = account("Conta Teste");
+        invite = pendingInvite("target@test.com", account, Role.MEMBER);
     }
 
     @Test
     void shouldRevokeInviteWhenAdmin() {
         when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
 
         revokeInvite.execute(1L, admin);
 
@@ -57,10 +57,10 @@ class RevokeInviteTest {
 
     @Test
     void shouldRevokeInviteWhenOwner() {
-        User owner = new User("Owner", "owner@test.com", "hash");
+        User owner = user("Owner", "owner@test.com");
         when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, owner))
-                .thenReturn(Optional.of(new Membership(account, owner, Role.OWNER)));
+                .thenReturn(Optional.of(membershipAs(account, owner, Role.OWNER)));
 
         revokeInvite.execute(1L, owner);
 
@@ -88,7 +88,7 @@ class RevokeInviteTest {
     void shouldThrowForbiddenWhenMemberCannotRevoke() {
         when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, member))
-                .thenReturn(Optional.of(new Membership(account, member, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, member, Role.MEMBER)));
 
         assertThatThrownBy(() -> revokeInvite.execute(1L, member))
                 .isInstanceOf(ForbiddenException.class);
@@ -96,11 +96,23 @@ class RevokeInviteTest {
 
     @Test
     void shouldThrowWhenInviteAlreadyAccepted() {
-        User acceptingUser = new User("Accepted", "target@test.com", "hash");
+        User acceptingUser = user("Accepted", "target@test.com");
         invite.accept(acceptingUser);
         when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
+
+        assertThatThrownBy(() -> revokeInvite.execute(1L, admin))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("pendente");
+    }
+
+    @Test
+    void shouldThrowWhenInviteAlreadyRevoked() {
+        invite.revoke();
+        when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
+        when(membershipRepository.findByAccountAndUser(account, admin))
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
 
         assertThatThrownBy(() -> revokeInvite.execute(1L, admin))
                 .isInstanceOf(IllegalArgumentException.class)

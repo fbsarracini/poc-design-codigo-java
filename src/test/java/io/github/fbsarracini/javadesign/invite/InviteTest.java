@@ -5,6 +5,7 @@ import io.github.fbsarracini.javadesign.account.Membership;
 import io.github.fbsarracini.javadesign.account.Role;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -20,8 +21,8 @@ class InviteTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account("Conta Teste");
-        user = new User("João", "joao@test.com", "hash");
+        account = account("Conta Teste");
+        user = user("João", "joao@test.com");
     }
 
     @Test

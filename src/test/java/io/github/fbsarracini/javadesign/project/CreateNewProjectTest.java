@@ -9,6 +9,7 @@ import io.github.fbsarracini.javadesign.exception.ForbiddenException;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,7 +21,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,9 +41,9 @@ class CreateNewProjectTest {
 
     @BeforeEach
     void setUp() {
-        member = new User("Member", "member@test.com", "hash");
-        client = new User("Client", "client@test.com", "hash");
-        account = new Account("Conta Teste");
+        member = user("Member", "member@test.com");
+        client = user("Client", "client@test.com");
+        account = account("Conta Teste");
         request = new NewProjectRequest("Projeto Novo");
     }
 
@@ -51,8 +51,9 @@ class CreateNewProjectTest {
     void shouldCreateProjectWhenMemberCanCreate() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, member))
-                .thenReturn(Optional.of(new Membership(account, member, Role.MEMBER)));
-        when(projectRepository.save(any(Project.class))).thenAnswer(inv -> inv.getArgument(0));
+                .thenReturn(Optional.of(membershipAs(account, member, Role.MEMBER)));
+        ArgumentCaptor<Project> projectCaptor = ArgumentCaptor.forClass(Project.class);
+        when(projectRepository.save(projectCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
 
         Project result = createNewProject.execute(1L, member, request);
 
@@ -65,13 +66,28 @@ class CreateNewProjectTest {
 
     @Test
     void shouldCreateProjectWhenAdminCanCreate() {
-        User admin = new User("Admin", "admin@test.com", "hash");
+        User admin = user("Admin", "admin@test.com");
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
-        when(projectRepository.save(any(Project.class))).thenAnswer(inv -> inv.getArgument(0));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
+        ArgumentCaptor<Project> projectCaptor = ArgumentCaptor.forClass(Project.class);
+        when(projectRepository.save(projectCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
 
         Project result = createNewProject.execute(1L, admin, request);
+
+        assertThat(result.getName()).isEqualTo("Projeto Novo");
+    }
+
+    @Test
+    void shouldCreateProjectWhenOwnerCanCreate() {
+        User owner = user("Owner", "owner@test.com");
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, owner))
+                .thenReturn(Optional.of(membershipAs(account, owner, Role.OWNER)));
+        ArgumentCaptor<Project> projectCaptor = ArgumentCaptor.forClass(Project.class);
+        when(projectRepository.save(projectCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        Project result = createNewProject.execute(1L, owner, request);
 
         assertThat(result.getName()).isEqualTo("Projeto Novo");
     }
@@ -88,7 +104,7 @@ class CreateNewProjectTest {
     void shouldThrowForbiddenWhenClientCannotCreateProject() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, client))
-                .thenReturn(Optional.of(new Membership(account, client, Role.CLIENT)));
+                .thenReturn(Optional.of(membershipAs(account, client, Role.CLIENT)));
 
         assertThatThrownBy(() -> createNewProject.execute(1L, client, request))
                 .isInstanceOf(ForbiddenException.class);

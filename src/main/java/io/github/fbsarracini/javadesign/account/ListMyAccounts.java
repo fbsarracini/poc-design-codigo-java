@@ -20,7 +20,7 @@ public class ListMyAccounts {
     }
 
     public List<AccountSummaryResponse> execute(User loggedUser) {
-        AppLog.logger(log).who(loggedUser).does("listar contas").debug();
+        AppLog.logger(log).who(loggedUser).does("listar contas").info();
         return membershipRepository.findByUser(loggedUser)
                 .stream()
                 .map(AccountSummaryResponse::of)

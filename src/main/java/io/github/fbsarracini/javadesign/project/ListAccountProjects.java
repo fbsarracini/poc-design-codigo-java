@@ -41,6 +41,7 @@ public class ListAccountProjects {
             throw new ForbiddenException();
         }
 
+        AppLog.logger(log).who(loggedUser).does("listar projetos").on("account=" + accountId).debug();
         return projectRepository.findByAccount(account)
                 .stream()
                 .map(ProjectSummaryResponse::of)

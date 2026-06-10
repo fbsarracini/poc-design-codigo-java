@@ -45,6 +45,7 @@ public class ListAccountInvites {
                     return new ForbiddenException();
                 });
 
+        AppLog.logger(log).who(loggedUser).does("listar convites").on("account=" + accountId).debug();
         return inviteRepository.findByAccountAndStatusAndExpirationDateGreaterThanEqual(account, InviteStatus.PENDING, LocalDate.now())
                 .stream()
                 .map(InviteSummaryResponse::of)

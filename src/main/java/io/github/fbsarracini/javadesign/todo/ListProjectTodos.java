@@ -59,6 +59,7 @@ public class ListProjectTodos {
             return todoRepository.findByProjectAndVisibleToClient(project, true, pageable);
         }
 
+        AppLog.logger(log).who(loggedUser).does("listar todos").on("project=" + projectId).debug();
         return todoRepository.findByProject(project, pageable);
     }
 }

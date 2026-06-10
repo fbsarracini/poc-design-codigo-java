@@ -2,6 +2,7 @@ package io.github.fbsarracini.javadesign.account;
 
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -11,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,18 +27,19 @@ class CreateNewAccountTest {
 
     @BeforeEach
     void setUp() {
-        owner = new User("Owner", "owner@test.com", "hash");
+        owner = user("Owner", "owner@test.com");
     }
 
     @Test
     void shouldCreateAccountAndAddOwnerMembership() {
         NewAccountRequest request = new NewAccountRequest("Minha Conta");
-        when(accountRepository.save(any(Account.class))).thenAnswer(inv -> inv.getArgument(0));
+        ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
+        when(accountRepository.save(accountCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
 
         Account result = createNewAccount.execute(owner, request);
 
         assertThat(result.getName()).isEqualTo("Minha Conta");
-        verify(accountRepository).save(any(Account.class));
+        verify(accountRepository).save(result);
 
         ArgumentCaptor<Membership> captor = ArgumentCaptor.forClass(Membership.class);
         verify(membershipRepository).save(captor.capture());

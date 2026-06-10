@@ -9,6 +9,7 @@ import io.github.fbsarracini.javadesign.exception.ForbiddenException;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -46,11 +47,11 @@ class GenerateNewInviteTest {
 
     @BeforeEach
     void setUp() {
-        admin = new User("Admin", "admin@test.com", "hash");
-        owner = new User("Owner", "owner@test.com", "hash");
-        member = new User("Member", "member@test.com", "hash");
-        client = new User("Client", "client@test.com", "hash");
-        account = new Account("Conta Teste");
+        admin = user("Admin", "admin@test.com");
+        owner = user("Owner", "owner@test.com");
+        member = user("Member", "member@test.com");
+        client = user("Client", "client@test.com");
+        account = account("Conta Teste");
         newInviteData = new NewInviteRequest("novo@test.com", 7, Role.MEMBER);
     }
 
@@ -58,7 +59,7 @@ class GenerateNewInviteTest {
     void shouldGenerateInviteWhenAdminAndNoPendingInvite() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
         when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
                 eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
                 .thenReturn(false);
@@ -75,7 +76,7 @@ class GenerateNewInviteTest {
     void shouldGenerateInviteWhenOwnerAndNoPendingInvite() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, owner))
-                .thenReturn(Optional.of(new Membership(account, owner, Role.OWNER)));
+                .thenReturn(Optional.of(membershipAs(account, owner, Role.OWNER)));
         when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
                 eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
                 .thenReturn(false);
@@ -100,7 +101,7 @@ class GenerateNewInviteTest {
     void shouldThrowForbiddenWhenMemberCannotInvite() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, member))
-                .thenReturn(Optional.of(new Membership(account, member, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, member, Role.MEMBER)));
 
         assertThatThrownBy(() -> generateNewInvite.execute(1L, member, newInviteData))
                 .isInstanceOf(ForbiddenException.class);
@@ -112,7 +113,7 @@ class GenerateNewInviteTest {
     void shouldThrowForbiddenWhenClientCannotInvite() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, client))
-                .thenReturn(Optional.of(new Membership(account, client, Role.CLIENT)));
+                .thenReturn(Optional.of(membershipAs(account, client, Role.CLIENT)));
 
         assertThatThrownBy(() -> generateNewInvite.execute(1L, client, newInviteData))
                 .isInstanceOf(ForbiddenException.class);
@@ -136,7 +137,7 @@ class GenerateNewInviteTest {
     void shouldThrowWhenPendingInviteAlreadyExists() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
         when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
                 eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
                 .thenReturn(true);

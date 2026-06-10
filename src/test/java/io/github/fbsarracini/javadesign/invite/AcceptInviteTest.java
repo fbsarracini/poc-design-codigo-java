@@ -7,6 +7,7 @@ import io.github.fbsarracini.javadesign.account.Role;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,7 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,9 +38,9 @@ class AcceptInviteTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account("Conta Teste");
-        user = new User("João", "joao@test.com", "hash");
-        invite = new Invite("joao@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
+        account = account("Conta Teste");
+        user = user("João", "joao@test.com");
+        invite = pendingInvite("joao@test.com", account, Role.MEMBER);
     }
 
     @Test
@@ -71,7 +71,7 @@ class AcceptInviteTest {
     void shouldThrowWhenUserAlreadyMember() {
         when(inviteRepository.findByToken("tok")).thenReturn(Optional.of(invite));
         when(membershipRepository.findByAccountAndUser(account, user))
-                .thenReturn(Optional.of(new Membership(account, user, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, user, Role.MEMBER)));
 
         assertThatThrownBy(() -> acceptInvite.execute("tok", user))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -97,7 +97,7 @@ class AcceptInviteTest {
 
     @Test
     void shouldThrowWhenEmailDoesNotMatch() {
-        Invite inviteForOther = new Invite("outro@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
+        Invite inviteForOther = pendingInvite("outro@test.com", account, Role.MEMBER);
         when(inviteRepository.findByToken("tok")).thenReturn(Optional.of(inviteForOther));
         when(membershipRepository.findByAccountAndUser(account, user)).thenReturn(Optional.empty());
 

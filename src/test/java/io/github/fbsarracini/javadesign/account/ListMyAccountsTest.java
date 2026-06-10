@@ -2,6 +2,7 @@ package io.github.fbsarracini.javadesign.account;
 
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,15 +25,15 @@ class ListMyAccountsTest {
 
     @BeforeEach
     void setUp() {
-        user = new User("User", "user@test.com", "hash");
+        user = user("User", "user@test.com");
     }
 
     @Test
     void shouldReturnAccountsForUser() {
-        Account a1 = new Account("Conta 1");
-        Account a2 = new Account("Conta 2");
-        Membership m1 = new Membership(a1, user, Role.OWNER);
-        Membership m2 = new Membership(a2, user, Role.MEMBER);
+        Account a1 = account("Conta 1");
+        Account a2 = account("Conta 2");
+        Membership m1 = membershipAs(a1, user, Role.OWNER);
+        Membership m2 = membershipAs(a2, user, Role.MEMBER);
         when(membershipRepository.findByUser(user)).thenReturn(List.of(m1, m2));
 
         List<AccountSummaryResponse> result = listMyAccounts.execute(user);

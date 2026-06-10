@@ -48,6 +48,7 @@ public class AddTodoToProject {
 
         User assignee = null;
         if (newTodoData.assigneeId() != null) {
+            AppLog.logger(log).who(loggedUser).does("adicionar todo").on("assigneeId=" + newTodoData.assigneeId()).debug();
             assignee = userRepository.findById(newTodoData.assigneeId())
                     .orElseThrow(NotFoundException::new);
         }

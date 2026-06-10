@@ -4,6 +4,7 @@ import io.github.fbsarracini.javadesign.exception.ForbiddenException;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,15 +31,15 @@ class ListAccountMembersTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account("Conta Teste");
-        user = new User("User", "user@test.com", "hash");
+        account = account("Conta Teste");
+        user = user("User", "user@test.com");
     }
 
     @Test
     void shouldReturnMembersForMember() {
-        User other = new User("Other", "other@test.com", "hash");
-        Membership m1 = new Membership(account, user, Role.MEMBER);
-        Membership m2 = new Membership(account, other, Role.ADMIN);
+        User other = user("Other", "other@test.com");
+        Membership m1 = membershipAs(account, user, Role.MEMBER);
+        Membership m2 = membershipAs(account, other, Role.ADMIN);
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, user))
                 .thenReturn(Optional.of(m1));

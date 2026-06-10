@@ -11,6 +11,7 @@ import io.github.fbsarracini.javadesign.project.ProjectMembershipRepository;
 import io.github.fbsarracini.javadesign.project.ProjectRepository;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,10 +46,10 @@ class ListProjectTodosTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account("Conta Teste");
-        memberUser = new User("Member", "member@test.com", "hash");
-        clientUser = new User("Client", "client@test.com", "hash");
-        project = new Project("Projeto", account);
+        account = account("Conta Teste");
+        memberUser = user("Member", "member@test.com");
+        clientUser = user("Client", "client@test.com");
+        project = project("Projeto", account);
         pageable = Pageable.unpaged();
     }
 
@@ -58,7 +59,7 @@ class ListProjectTodosTest {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(projectMembershipRepository.existsByProjectAndUser(project, memberUser)).thenReturn(true);
         when(membershipRepository.findByAccountAndUser(account, memberUser))
-                .thenReturn(Optional.of(new Membership(account, memberUser, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, memberUser, Role.MEMBER)));
         when(todoRepository.findByProject(project, pageable)).thenReturn(page);
 
         Page<Todo> result = listProjectTodos.execute(1L, memberUser, pageable);
@@ -73,7 +74,7 @@ class ListProjectTodosTest {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(projectMembershipRepository.existsByProjectAndUser(project, clientUser)).thenReturn(true);
         when(membershipRepository.findByAccountAndUser(account, clientUser))
-                .thenReturn(Optional.of(new Membership(account, clientUser, Role.CLIENT)));
+                .thenReturn(Optional.of(membershipAs(account, clientUser, Role.CLIENT)));
         when(todoRepository.findByProjectAndVisibleToClient(project, true, pageable)).thenReturn(page);
 
         Page<Todo> result = listProjectTodos.execute(1L, clientUser, pageable);

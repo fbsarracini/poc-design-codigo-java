@@ -10,6 +10,7 @@ import io.github.fbsarracini.javadesign.project.Project;
 import io.github.fbsarracini.javadesign.project.ProjectMembershipRepository;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,12 +42,12 @@ class CompleteTodoTest {
 
     @BeforeEach
     void setUp() {
-        assignee = new User("Assignee", "assignee@test.com", "hash");
-        adminUser = new User("Admin", "admin@test.com", "hash");
-        memberUser = new User("Member", "member@test.com", "hash");
-        account = new Account("Conta Teste");
-        project = new Project("Projeto Teste", account);
-        todo = new Todo("Tarefa", project, assignee, null, false);
+        assignee = user("Assignee", "assignee@test.com");
+        adminUser = user("Admin", "admin@test.com");
+        memberUser = user("Member", "member@test.com");
+        account = account("Conta Teste");
+        project = project("Projeto Teste", account);
+        todo = todo("Tarefa", project, assignee);
     }
 
     @Test
@@ -54,7 +55,7 @@ class CompleteTodoTest {
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
         when(projectMembershipRepository.existsByProjectAndUser(project, assignee)).thenReturn(true);
         when(membershipRepository.findByAccountAndUser(account, assignee))
-                .thenReturn(Optional.of(new Membership(account, assignee, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, assignee, Role.MEMBER)));
 
         completeTodo.execute(1L, assignee);
 
@@ -67,7 +68,7 @@ class CompleteTodoTest {
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
         when(projectMembershipRepository.existsByProjectAndUser(project, adminUser)).thenReturn(true);
         when(membershipRepository.findByAccountAndUser(account, adminUser))
-                .thenReturn(Optional.of(new Membership(account, adminUser, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, adminUser, Role.ADMIN)));
 
         completeTodo.execute(1L, adminUser);
 
@@ -76,12 +77,12 @@ class CompleteTodoTest {
 
     @Test
     void shouldCompleteWhenActorIsAssigneeAndAdmin() {
-        User adminAssignee = new User("AdminAssignee", "adminassignee@test.com", "hash");
-        Todo todoAssignedToAdmin = new Todo("Tarefa", project, adminAssignee, null, false);
+        User adminAssignee = user("AdminAssignee", "adminassignee@test.com");
+        Todo todoAssignedToAdmin = todo("Tarefa", project, adminAssignee);
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todoAssignedToAdmin));
         when(projectMembershipRepository.existsByProjectAndUser(project, adminAssignee)).thenReturn(true);
         when(membershipRepository.findByAccountAndUser(account, adminAssignee))
-                .thenReturn(Optional.of(new Membership(account, adminAssignee, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, adminAssignee, Role.ADMIN)));
 
         completeTodo.execute(1L, adminAssignee);
 
@@ -90,11 +91,11 @@ class CompleteTodoTest {
 
     @Test
     void shouldCompleteWhenActorIsOwner() {
-        User ownerUser = new User("Owner", "owner@test.com", "hash");
+        User ownerUser = user("Owner", "owner@test.com");
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
         when(projectMembershipRepository.existsByProjectAndUser(project, ownerUser)).thenReturn(true);
         when(membershipRepository.findByAccountAndUser(account, ownerUser))
-                .thenReturn(Optional.of(new Membership(account, ownerUser, Role.OWNER)));
+                .thenReturn(Optional.of(membershipAs(account, ownerUser, Role.OWNER)));
 
         completeTodo.execute(1L, ownerUser);
 
@@ -123,7 +124,7 @@ class CompleteTodoTest {
         when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
         when(projectMembershipRepository.existsByProjectAndUser(project, memberUser)).thenReturn(true);
         when(membershipRepository.findByAccountAndUser(account, memberUser))
-                .thenReturn(Optional.of(new Membership(account, memberUser, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, memberUser, Role.MEMBER)));
 
         assertThatThrownBy(() -> completeTodo.execute(1L, memberUser))
                 .isInstanceOf(ForbiddenException.class);

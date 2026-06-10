@@ -9,6 +9,7 @@ import io.github.fbsarracini.javadesign.project.ProjectRepository;
 import io.github.fbsarracini.javadesign.user.User;
 import io.github.fbsarracini.javadesign.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -28,12 +29,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AddTodoToProjectTest {
 
-    @Mock private ProjectRepository projectRepository;
-    @Mock private ProjectMembershipRepository projectMembershipRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private TodoRepository todoRepository;
+    @Mock
+    private ProjectRepository projectRepository;
+    @Mock
+    private ProjectMembershipRepository projectMembershipRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private TodoRepository todoRepository;
 
-    @InjectMocks private AddTodoToProject addTodoToProject;
+    @InjectMocks
+    private AddTodoToProject addTodoToProject;
 
     private User actor;
     private User assignee;
@@ -42,10 +48,10 @@ class AddTodoToProjectTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account("Conta Teste");
-        actor = new User("Actor", "actor@test.com", "hash");
-        assignee = new User("Assignee", "assignee@test.com", "hash");
-        project = new Project("Projeto", account);
+        account = account("Conta Teste");
+        actor = user("Actor", "actor@test.com");
+        assignee = user("Assignee", "assignee@test.com");
+        project = project("Projeto", account);
     }
 
     @Test
@@ -54,7 +60,8 @@ class AddTodoToProjectTest {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(projectMembershipRepository.existsByProjectAndUser(project, actor)).thenReturn(true);
         when(userRepository.findById(2L)).thenReturn(Optional.of(assignee));
-        when(todoRepository.save(any(Todo.class))).thenAnswer(inv -> inv.getArgument(0));
+        ArgumentCaptor<Todo> todoCaptor = ArgumentCaptor.forClass(Todo.class);
+        when(todoRepository.save(todoCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
 
         Todo result = addTodoToProject.execute(1L, actor, request);
 
@@ -67,7 +74,8 @@ class AddTodoToProjectTest {
         NewTodoData request = new NewTodoRequest("Tarefa", null, null, false);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(projectMembershipRepository.existsByProjectAndUser(project, actor)).thenReturn(true);
-        when(todoRepository.save(any(Todo.class))).thenAnswer(inv -> inv.getArgument(0));
+        ArgumentCaptor<Todo> todoCaptor = ArgumentCaptor.forClass(Todo.class);
+        when(todoRepository.save(todoCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
 
         Todo result = addTodoToProject.execute(1L, actor, request);
 
@@ -110,7 +118,8 @@ class AddTodoToProjectTest {
         NewTodoData request = new NewTodoRequest("Tarefa Pública", null, null, true);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(projectMembershipRepository.existsByProjectAndUser(project, actor)).thenReturn(true);
-        when(todoRepository.save(any(Todo.class))).thenAnswer(inv -> inv.getArgument(0));
+        ArgumentCaptor<Todo> todoCaptor = ArgumentCaptor.forClass(Todo.class);
+        when(todoRepository.save(todoCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
 
         Todo result = addTodoToProject.execute(1L, actor, request);
 

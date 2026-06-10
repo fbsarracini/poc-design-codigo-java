@@ -9,6 +9,7 @@ import io.github.fbsarracini.javadesign.exception.ForbiddenException;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,17 +40,17 @@ class ListAccountInvitesTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account("Conta Teste");
-        admin = new User("Admin", "admin@test.com", "hash");
-        member = new User("Member", "member@test.com", "hash");
+        account = account("Conta Teste");
+        admin = user("Admin", "admin@test.com");
+        member = user("Member", "member@test.com");
     }
 
     @Test
     void shouldReturnPendingInvitesForAdmin() {
-        Invite invite = new Invite("novo@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
+        Invite invite = pendingInvite("novo@test.com", account, Role.MEMBER);
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
         when(inviteRepository.findByAccountAndStatusAndExpirationDateGreaterThanEqual(
                 eq(account), eq(InviteStatus.PENDING), eq(LocalDate.now())))
                 .thenReturn(List.of(invite));
@@ -58,6 +59,22 @@ class ListAccountInvitesTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).email()).isEqualTo("novo@test.com");
+    }
+
+    @Test
+    void shouldReturnPendingInvitesForOwner() {
+        User owner = user("Owner", "owner@test.com");
+        Invite invite = pendingInvite("novo@test.com", account, Role.MEMBER);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, owner))
+                .thenReturn(Optional.of(membershipAs(account, owner, Role.OWNER)));
+        when(inviteRepository.findByAccountAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq(InviteStatus.PENDING), eq(LocalDate.now())))
+                .thenReturn(List.of(invite));
+
+        List<InviteSummaryResponse> result = listAccountInvites.execute(1L, owner);
+
+        assertThat(result).hasSize(1);
     }
 
     @Test
@@ -81,7 +98,7 @@ class ListAccountInvitesTest {
     void shouldThrowForbiddenWhenMemberCannotListInvites() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, member))
-                .thenReturn(Optional.of(new Membership(account, member, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, member, Role.MEMBER)));
 
         assertThatThrownBy(() -> listAccountInvites.execute(1L, member))
                 .isInstanceOf(ForbiddenException.class);

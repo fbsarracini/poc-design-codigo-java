@@ -9,6 +9,7 @@ import io.github.fbsarracini.javadesign.exception.ForbiddenException;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,17 +37,17 @@ class ListAccountProjectsTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account("Conta Teste");
-        user = new User("User", "user@test.com", "hash");
+        account = account("Conta Teste");
+        user = user("User", "user@test.com");
     }
 
     @Test
     void shouldReturnProjectsForMember() {
-        Project p1 = new Project("Projeto 1", account);
-        Project p2 = new Project("Projeto 2", account);
+        Project p1 = project("Projeto 1", account);
+        Project p2 = project("Projeto 2", account);
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, user))
-                .thenReturn(Optional.of(new Membership(account, user, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, user, Role.MEMBER)));
         when(projectRepository.findByAccount(account)).thenReturn(List.of(p1, p2));
 
         List<ProjectSummaryResponse> result = listAccountProjects.execute(1L, user);
@@ -60,7 +61,7 @@ class ListAccountProjectsTest {
     void shouldReturnEmptyListWhenNoProjects() {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, user))
-                .thenReturn(Optional.of(new Membership(account, user, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, user, Role.MEMBER)));
         when(projectRepository.findByAccount(account)).thenReturn(List.of());
 
         List<ProjectSummaryResponse> result = listAccountProjects.execute(1L, user);

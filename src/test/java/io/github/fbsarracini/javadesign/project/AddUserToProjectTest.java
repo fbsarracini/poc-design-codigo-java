@@ -9,14 +9,17 @@ import io.github.fbsarracini.javadesign.exception.NotFoundException;
 import io.github.fbsarracini.javadesign.user.User;
 import io.github.fbsarracini.javadesign.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import static io.github.fbsarracini.javadesign.TestFixtures.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -41,36 +44,40 @@ class AddUserToProjectTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account("Conta Teste");
-        admin = new User("Admin", "admin@test.com", "hash");
-        memberActor = new User("Member", "member@test.com", "hash");
-        targetUser = new User("Target", "target@test.com", "hash");
-        project = new Project("Projeto", account);
+        account = account("Conta Teste");
+        admin = user("Admin", "admin@test.com");
+        memberActor = user("Member", "member@test.com");
+        targetUser = user("Target", "target@test.com");
+        project = project("Projeto", account);
     }
 
     @Test
     void shouldAddUserToProjectSuccessfully() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
         when(userRepository.findByEmail("target@test.com")).thenReturn(Optional.of(targetUser));
         when(membershipRepository.findByAccountAndUser(account, targetUser))
-                .thenReturn(Optional.of(new Membership(account, targetUser, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, targetUser, Role.MEMBER)));
         when(projectMembershipRepository.existsByProjectAndUser(project, targetUser)).thenReturn(false);
 
         addUserToProject.execute(1L, admin, "target@test.com");
 
-        verify(projectMembershipRepository).save(any(ProjectMembership.class));
+        ArgumentCaptor<ProjectMembership> pmCaptor = ArgumentCaptor.forClass(ProjectMembership.class);
+        verify(projectMembershipRepository).save(pmCaptor.capture());
+        assertThat(pmCaptor.getValue())
+                .hasFieldOrPropertyWithValue("project", project)
+                .hasFieldOrPropertyWithValue("user", targetUser);
     }
 
     @Test
     void shouldBeIdempotentWhenUserAlreadyInProject() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
         when(userRepository.findByEmail("target@test.com")).thenReturn(Optional.of(targetUser));
         when(membershipRepository.findByAccountAndUser(account, targetUser))
-                .thenReturn(Optional.of(new Membership(account, targetUser, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, targetUser, Role.MEMBER)));
         when(projectMembershipRepository.existsByProjectAndUser(project, targetUser)).thenReturn(true);
 
         addUserToProject.execute(1L, admin, "target@test.com");
@@ -80,18 +87,22 @@ class AddUserToProjectTest {
 
     @Test
     void shouldAddUserWhenActorIsOwner() {
-        User owner = new User("Owner", "owner@test.com", "hash");
+        User owner = user("Owner", "owner@test.com");
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, owner))
-                .thenReturn(Optional.of(new Membership(account, owner, Role.OWNER)));
+                .thenReturn(Optional.of(membershipAs(account, owner, Role.OWNER)));
         when(userRepository.findByEmail("target@test.com")).thenReturn(Optional.of(targetUser));
         when(membershipRepository.findByAccountAndUser(account, targetUser))
-                .thenReturn(Optional.of(new Membership(account, targetUser, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, targetUser, Role.MEMBER)));
         when(projectMembershipRepository.existsByProjectAndUser(project, targetUser)).thenReturn(false);
 
         addUserToProject.execute(1L, owner, "target@test.com");
 
-        verify(projectMembershipRepository).save(any(ProjectMembership.class));
+        ArgumentCaptor<ProjectMembership> pmCaptor = ArgumentCaptor.forClass(ProjectMembership.class);
+        verify(projectMembershipRepository).save(pmCaptor.capture());
+        assertThat(pmCaptor.getValue())
+                .hasFieldOrPropertyWithValue("project", project)
+                .hasFieldOrPropertyWithValue("user", targetUser);
     }
 
     @Test
@@ -115,7 +126,7 @@ class AddUserToProjectTest {
     void shouldThrowForbiddenWhenActorIsMember() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, memberActor))
-                .thenReturn(Optional.of(new Membership(account, memberActor, Role.MEMBER)));
+                .thenReturn(Optional.of(membershipAs(account, memberActor, Role.MEMBER)));
 
         assertThatThrownBy(() -> addUserToProject.execute(1L, memberActor, "target@test.com"))
                 .isInstanceOf(ForbiddenException.class);
@@ -125,7 +136,7 @@ class AddUserToProjectTest {
     void shouldThrowWhenTargetUserNotFound() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
         when(userRepository.findByEmail("notfound@test.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> addUserToProject.execute(1L, admin, "notfound@test.com"))
@@ -136,7 +147,7 @@ class AddUserToProjectTest {
     void shouldThrowWhenTargetIsNotAccountMember() {
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(membershipRepository.findByAccountAndUser(account, admin))
-                .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
         when(userRepository.findByEmail("target@test.com")).thenReturn(Optional.of(targetUser));
         when(membershipRepository.findByAccountAndUser(account, targetUser)).thenReturn(Optional.empty());
 

@@ -41,6 +41,7 @@ public class AddUserToProject {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(NotFoundException::new);
 
+        AppLog.logger(log).who(loggedUser).does("verificar permissão de admin").on("project=" + projectId).debug();
         membershipRepository.findByAccountAndUser(project.getAccount(), loggedUser)
                 .filter(Membership::isAdminOrAbove)
                 .orElseThrow(() -> {
@@ -51,13 +52,14 @@ public class AddUserToProject {
         User targetUser = userRepository.findByEmail(targetEmail)
                 .orElseThrow(NotFoundException::new);
 
+        AppLog.logger(log).who(loggedUser).does("verificar membership na conta").on("project=" + projectId + " target=" + targetEmail).debug();
         if (membershipRepository.findByAccountAndUser(project.getAccount(), targetUser).isEmpty()) {
             AppLog.logger(log).who(loggedUser).does("adicionar usuário ao projeto").on("project=" + projectId + " target=" + targetEmail).failed("target não é membro da conta").warn();
             throw new IllegalArgumentException("o usuário não é membro desta conta");
         }
 
+        AppLog.logger(log).who(loggedUser).does("verificar membership no projeto").on("project=" + projectId + " target=" + targetEmail).debug();
         if (!projectMembershipRepository.existsByProjectAndUser(project, targetUser)) {
-            AppLog.logger(log).who(loggedUser).does("adicionar usuário ao projeto").on("project=" + projectId + " target=" + targetEmail).info();
             projectMembershipRepository.save(new ProjectMembership(project, targetUser));
             AppLog.logger(log).who(loggedUser).does("adicionar usuário ao projeto").on("project=" + projectId + " target=" + targetEmail).info();
         }

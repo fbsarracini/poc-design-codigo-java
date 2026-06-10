@@ -29,11 +29,13 @@ public class ListAccountMembers {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(NotFoundException::new);
 
+        AppLog.logger(log).who(loggedUser).does("verificar membership na conta").on("account=" + accountId).debug();
         if (membershipRepository.findByAccountAndUser(account, loggedUser).isEmpty()) {
             AppLog.logger(log).who(loggedUser).does("listar membros").on("account=" + accountId).failed("sem membership na conta").warn();
             throw new ForbiddenException();
         }
 
+        AppLog.logger(log).who(loggedUser).does("consultar membros").on("account=" + accountId).debug();
         List<MemberSummaryResponse> result = membershipRepository.findByAccount(account)
                 .stream()
                 .map(MemberSummaryResponse::of)

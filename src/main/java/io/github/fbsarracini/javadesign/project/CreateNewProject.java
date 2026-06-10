@@ -7,13 +7,18 @@ import io.github.fbsarracini.javadesign.account.Membership;
 import io.github.fbsarracini.javadesign.account.MembershipRepository;
 import io.github.fbsarracini.javadesign.exception.ForbiddenException;
 import io.github.fbsarracini.javadesign.exception.NotFoundException;
+import io.github.fbsarracini.javadesign.log.AppLog;
 import io.github.fbsarracini.javadesign.user.User;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @UseCase
 public class CreateNewProject {
+
+    private static final Logger log = LoggerFactory.getLogger(CreateNewProject.class);
 
     private final AccountRepository accountRepository;
     private final MembershipRepository membershipRepository;
@@ -32,15 +37,20 @@ public class CreateNewProject {
 
     @Transactional
     public Project execute(@Positive Long accountId, User loggedUser, @Valid NewProjectData newProjectData) {
+        AppLog.logger(log).who(loggedUser).does("criar projeto").on("account=" + accountId).debug();
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(NotFoundException::new);
 
         membershipRepository.findByAccountAndUser(account, loggedUser)
                 .filter(Membership::canCreateProject)
-                .orElseThrow(ForbiddenException::new);
+                .orElseThrow(() -> {
+                    AppLog.logger(log).who(loggedUser).does("criar projeto").on("account=" + accountId).failed("sem permissão para criar projetos").warn();
+                    return new ForbiddenException();
+                });
 
         Project project = projectRepository.save(newProjectData.toNewProject(account));
         projectMembershipRepository.save(new ProjectMembership(project, loggedUser));
+        AppLog.logger(log).who(loggedUser).does("criar projeto").on("project=" + project.getId() + " account=" + accountId).info();
         return project;
     }
 }

@@ -3,6 +3,7 @@ package io.github.fbsarracini.javadesign.user;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.Assert;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +28,9 @@ public class User implements UserDetails {
     public User() {}
 
     public User(String name, String email, String password) {
+        Assert.hasText(name, "o nome é obrigatório");
+        Assert.hasText(email, "o email é obrigatório");
+        Assert.hasText(password, "a senha é obrigatória");
         this.name = name;
         this.email = email;
         this.password = password;

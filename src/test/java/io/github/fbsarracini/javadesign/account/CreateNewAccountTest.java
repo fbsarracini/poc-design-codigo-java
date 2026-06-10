@@ -4,12 +4,12 @@ import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +39,12 @@ class CreateNewAccountTest {
 
         assertEquals(account, result);
         verify(accountRepository).save(account);
-        verify(membershipRepository).save(any(Membership.class));
+
+        ArgumentCaptor<Membership> captor = ArgumentCaptor.forClass(Membership.class);
+        verify(membershipRepository).save(captor.capture());
+        Membership saved = captor.getValue();
+        assertEquals(account, saved.getAccount());
+        assertEquals(owner, saved.getUser());
+        assertEquals(Role.OWNER, saved.getRole());
     }
 }

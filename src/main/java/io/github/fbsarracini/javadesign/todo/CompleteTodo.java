@@ -46,6 +46,7 @@ public class CompleteTodo {
                 .map(m -> m.isAdminOrAbove())
                 .orElse(false);
 
+        AppLog.logger(log).who(actor).does("completar todo").on("todo=" + todoId + " isAssignee=" + isAssignee + " isAdminOrAbove=" + isAdminOrAbove).debug();
         if (!isAssignee && !isAdminOrAbove) {
             AppLog.logger(log).who(actor).does("completar todo").on("todo=" + todoId).failed("não é assignee nem admin").warn();
             throw new ForbiddenException();

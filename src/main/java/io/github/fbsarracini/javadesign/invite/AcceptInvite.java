@@ -34,7 +34,13 @@ public class AcceptInvite {
             throw new IllegalArgumentException("usuário já é membro desta conta");
         }
 
-        Membership membership = invite.accept(loggedUser);
+        Membership membership;
+        try {
+            membership = invite.accept(loggedUser);
+        } catch (IllegalArgumentException e) {
+            AppLog.logger(log).who(loggedUser).does("aceitar convite").on("invite=" + invite.getId()).failed(e.getMessage()).warn();
+            throw e;
+        }
 
         inviteRepository.save(invite);
         membershipRepository.save(membership);

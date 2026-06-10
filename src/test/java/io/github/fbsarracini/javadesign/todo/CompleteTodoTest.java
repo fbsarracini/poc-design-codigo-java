@@ -75,6 +75,20 @@ class CompleteTodoTest {
     }
 
     @Test
+    void shouldCompleteWhenActorIsAssigneeAndAdmin() {
+        User adminAssignee = new User("AdminAssignee", "adminassignee@test.com", "hash");
+        Todo todoAssignedToAdmin = new Todo("Tarefa", project, adminAssignee, null, false);
+        when(todoRepository.findById(1L)).thenReturn(Optional.of(todoAssignedToAdmin));
+        when(projectMembershipRepository.existsByProjectAndUser(project, adminAssignee)).thenReturn(true);
+        when(membershipRepository.findByAccountAndUser(account, adminAssignee))
+                .thenReturn(Optional.of(new Membership(account, adminAssignee, Role.ADMIN)));
+
+        completeTodo.execute(1L, adminAssignee);
+
+        assertTrue(todoAssignedToAdmin.isCompleted());
+    }
+
+    @Test
     void shouldThrowWhenTodoNotFound() {
         when(todoRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -97,6 +111,16 @@ class CompleteTodoTest {
         when(projectMembershipRepository.existsByProjectAndUser(project, memberUser)).thenReturn(true);
         when(membershipRepository.findByAccountAndUser(account, memberUser))
                 .thenReturn(Optional.of(new Membership(account, memberUser, Role.MEMBER)));
+
+        assertThatThrownBy(() -> completeTodo.execute(1L, memberUser))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void shouldThrowForbiddenWhenProjectMemberHasNoAccountMembership() {
+        when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
+        when(projectMembershipRepository.existsByProjectAndUser(project, memberUser)).thenReturn(true);
+        when(membershipRepository.findByAccountAndUser(account, memberUser)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> completeTodo.execute(1L, memberUser))
                 .isInstanceOf(ForbiddenException.class);

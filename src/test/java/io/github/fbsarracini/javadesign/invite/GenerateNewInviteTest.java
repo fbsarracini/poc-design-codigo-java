@@ -20,8 +20,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,28 +37,50 @@ class GenerateNewInviteTest {
     @InjectMocks private GenerateNewInvite generateNewInvite;
 
     private User admin;
+    private User owner;
     private User member;
     private Account account;
 
     @BeforeEach
     void setUp() {
         admin = new User("Admin", "admin@test.com", "hash");
+        owner = new User("Owner", "owner@test.com", "hash");
         member = new User("Member", "member@test.com", "hash");
         account = new Account("Conta Teste");
     }
 
     @Test
     void shouldGenerateInviteWhenAdminAndNoPendingInvite() {
+        Invite invite = new Invite("novo@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
         when(newInviteData.email()).thenReturn("novo@test.com");
+        when(newInviteData.toNewInvite(account)).thenReturn(invite);
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))
                 .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
         when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
-                any(), any(), any(), any())).thenReturn(false);
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), any(LocalDate.class)))
+                .thenReturn(false);
 
         generateNewInvite.execute(1L, admin, newInviteData);
 
-        verify(inviteRepository).save(any());
+        verify(inviteRepository).save(invite);
+    }
+
+    @Test
+    void shouldGenerateInviteWhenOwnerAndNoPendingInvite() {
+        Invite invite = new Invite("novo@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
+        when(newInviteData.email()).thenReturn("novo@test.com");
+        when(newInviteData.toNewInvite(account)).thenReturn(invite);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, owner))
+                .thenReturn(Optional.of(new Membership(account, owner, Role.OWNER)));
+        when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), any(LocalDate.class)))
+                .thenReturn(false);
+
+        generateNewInvite.execute(1L, owner, newInviteData);
+
+        verify(inviteRepository).save(invite);
     }
 
     @Test
@@ -76,7 +100,7 @@ class GenerateNewInviteTest {
         assertThatThrownBy(() -> generateNewInvite.execute(1L, member, newInviteData))
                 .isInstanceOf(ForbiddenException.class);
 
-        verify(inviteRepository, never()).save(any());
+        verifyNoInteractions(inviteRepository);
     }
 
     @Test
@@ -86,12 +110,13 @@ class GenerateNewInviteTest {
         when(membershipRepository.findByAccountAndUser(account, admin))
                 .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
         when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
-                any(), any(), any(), any())).thenReturn(true);
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), any(LocalDate.class)))
+                .thenReturn(true);
 
         assertThatThrownBy(() -> generateNewInvite.execute(1L, admin, newInviteData))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("já existe um convite pendente para este email");
 
-        verify(inviteRepository, never()).save(any());
+        verify(inviteRepository, never()).save(any(Invite.class));
     }
 }

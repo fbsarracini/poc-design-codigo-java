@@ -49,6 +49,7 @@ public class Invite {
     public Invite(String email, LocalDate expirationDate, Account account, Role role) {
         Assert.hasText(email, "o email precisa estar preenchido");
         Assert.isTrue(expirationDate.isAfter(LocalDate.now()), "a data de expiração do convite tem que ser no futuro");
+        Assert.isTrue(!expirationDate.isAfter(LocalDate.now().plusDays(90)), "a data de expiração não pode ultrapassar 90 dias");
         Assert.notNull(account, "a conta nao pode ser nula");
         Assert.notNull(role, "o papel é obrigatório");
         Assert.isTrue(role != Role.OWNER, "não é possível convidar alguém como OWNER");

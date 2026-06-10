@@ -23,12 +23,12 @@ public class CreateNewAccount {
 
     @Transactional
     public Account execute(User loggedUser, @Valid NewAccountData newAccountData) {
+        AppLog.logger(log).who(loggedUser).does("criar conta").debug();
         AppLog.logger(log).who(loggedUser).does("criar conta").info();
         Account account = accountRepository.save(newAccountData.toNewAccount());
-        AppLog.logger(log).who(loggedUser).does("criar conta").on("account=" + account.getId()).info();
         AppLog.logger(log).who(loggedUser).does("criar membership").on("account=" + account.getId()).info();
         membershipRepository.save(new Membership(account, loggedUser, Role.OWNER));
-        AppLog.logger(log).who(loggedUser).does("criar membership").on("account=" + account.getId()).info();
+        AppLog.logger(log).who(loggedUser).does("criar conta").on("account=" + account.getId()).info();
         return account;
     }
 }

@@ -129,4 +129,16 @@ class RevokeInviteTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("pendente");
     }
+
+    @Test
+    @DisplayName("deve lançar Forbidden quando client não pode revogar")
+    void shouldThrowForbiddenWhenClientCannotRevoke() {
+        User client = user("Client", "client@test.com");
+        when(inviteRepository.findById(1L)).thenReturn(Optional.of(invite));
+        when(membershipRepository.findByAccountAndUser(account, client))
+                .thenReturn(Optional.of(membershipAs(account, client, Role.CLIENT)));
+
+        assertThatThrownBy(() -> revokeInvite.execute(1L, client))
+                .isInstanceOf(ForbiddenException.class);
+    }
 }

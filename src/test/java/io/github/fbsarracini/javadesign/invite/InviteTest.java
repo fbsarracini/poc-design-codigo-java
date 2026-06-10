@@ -207,4 +207,23 @@ class InviteTest {
         assertThat(invite.getStatus()).isEqualTo(InviteStatus.ACCEPTED);
         assertThat(membership.getUser()).isEqualTo(user);
     }
+
+    @Test
+    @DisplayName("deve criar convite com data de expiração máxima (90 dias)")
+    void shouldCreateInviteWithMaximumExpirationDate() {
+        LocalDate maxDate = LocalDate.now().plusDays(90);
+
+        Invite invite = new Invite("joao@test.com", maxDate, account, Role.MEMBER);
+
+        assertThat(invite.getExpirationDate()).isEqualTo(maxDate);
+        assertThat(invite.getStatus()).isEqualTo(InviteStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("deve lançar exceção quando data de expiração ultrapassa 90 dias")
+    void shouldThrowWhenExpirationDateExceeds90Days() {
+        assertThatThrownBy(() -> new Invite("joao@test.com", LocalDate.now().plusDays(91), account, Role.MEMBER))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("90 dias");
+    }
 }

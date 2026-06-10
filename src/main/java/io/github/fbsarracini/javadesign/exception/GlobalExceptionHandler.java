@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -73,8 +74,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGeneric(Exception ex) {
-        AppLog.logger(log).system().does("processar request").failed(ex.getClass().getSimpleName()).error(ex);
+    public ResponseEntity<ApiError> handleGeneric(Exception ex, Authentication authentication) {
+        String who = authentication != null ? authentication.getName() : "sistema";
+        AppLog.logger(log).who(who).does("processar request").failed(ex.getClass().getSimpleName()).error(ex);
         return ResponseEntity.internalServerError()
                 .body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR, "erro interno", List.of()));
     }

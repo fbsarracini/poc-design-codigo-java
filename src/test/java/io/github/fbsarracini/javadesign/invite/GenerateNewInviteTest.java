@@ -181,6 +181,45 @@ class GenerateNewInviteTest {
     }
 
     @Test
+    @DisplayName("deve gerar convite com validade máxima (90 dias)")
+    void shouldGenerateInviteWithMaximumDaysToExpire() {
+        NewInviteData maxDaysData = new NewInviteRequest("novo@test.com", 90, Role.MEMBER);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, admin))
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
+        when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
+                .thenReturn(false);
+
+        generateNewInvite.execute(1L, admin, maxDaysData);
+
+        ArgumentCaptor<Invite> captor = ArgumentCaptor.forClass(Invite.class);
+        verify(inviteRepository).save(captor.capture());
+        assertThat(captor.getValue().getExpirationDate())
+                .isEqualTo(LocalDate.now().plusDays(90));
+    }
+
+    @Test
+    @DisplayName("deve lançar exceção quando daysToExpire ultrapassa 90 dias")
+    void shouldThrowWhenDaysToExpireExceeds90Days() {
+        NewInviteData over90Data = new NewInviteRequest("novo@test.com", 91, Role.MEMBER);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, admin))
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
+        when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
+                .thenReturn(false);
+
+        assertThatThrownBy(() -> generateNewInvite.execute(1L, admin, over90Data))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("90 dias");
+
+        verify(inviteRepository).existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now()));
+        verifyNoMoreInteractions(inviteRepository);
+    }
+
+    @Test
     @DisplayName("deve lançar exceção ao convidar com role OWNER")
     void shouldThrowWhenInvitingWithOwnerRole() {
         NewInviteData ownerData = new NewInviteRequest("novo@test.com", 7, Role.OWNER);

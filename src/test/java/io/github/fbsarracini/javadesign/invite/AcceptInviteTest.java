@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -116,6 +117,23 @@ class AcceptInviteTest {
         assertThatThrownBy(() -> acceptInvite.execute("tok", user))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("email");
+
+        verify(inviteRepository).findByToken("tok");
+        verifyNoMoreInteractions(inviteRepository);
+        verify(membershipRepository).findByAccountAndUser(account, user);
+        verifyNoMoreInteractions(membershipRepository);
+    }
+
+    @Test
+    @DisplayName("deve lançar exceção quando convite está expirado")
+    void shouldThrowWhenInviteIsExpired() {
+        Invite expiredInvite = new Invite("joao@test.com", LocalDate.now().minusDays(1), account, Role.MEMBER, InviteStatus.PENDING);
+        when(inviteRepository.findByToken("tok")).thenReturn(Optional.of(expiredInvite));
+        when(membershipRepository.findByAccountAndUser(account, user)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> acceptInvite.execute("tok", user))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("expirado");
 
         verify(inviteRepository).findByToken("tok");
         verifyNoMoreInteractions(inviteRepository);

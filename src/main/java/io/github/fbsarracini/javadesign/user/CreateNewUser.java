@@ -30,8 +30,9 @@ public class CreateNewUser {
                     throw new UnprocessableException();
                 });
 
+        AppLog.logger(log).system().does("criar usuário").on("email=" + newUserData.getEmail()).info();
         User user = userRepository.save(newUserData.toNewUser(passwordEncoder));
-        AppLog.logger(log).system().does("criar usuário").on("email=" + newUserData.getEmail() + " userId=" + user.getId()).info();
+        AppLog.logger(log).system().does("criar usuário").on("userId=" + user.getId()).info();
         return user;
     }
 }

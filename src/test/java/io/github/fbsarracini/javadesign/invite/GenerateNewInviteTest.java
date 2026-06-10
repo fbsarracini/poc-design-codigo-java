@@ -160,4 +160,39 @@ class GenerateNewInviteTest {
 
         verify(inviteRepository, never()).save(any(Invite.class));
     }
+
+    @Test
+    @DisplayName("deve gerar convite com validade mínima de 1 dia")
+    void shouldGenerateInviteWithMinimumOneDayExpiration() {
+        NewInviteData oneDayData = new NewInviteRequest("novo@test.com", 1, Role.MEMBER);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, admin))
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
+        when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
+                .thenReturn(false);
+
+        generateNewInvite.execute(1L, admin, oneDayData);
+
+        ArgumentCaptor<Invite> captor = ArgumentCaptor.forClass(Invite.class);
+        verify(inviteRepository).save(captor.capture());
+        assertThat(captor.getValue().getExpirationDate()).isEqualTo(LocalDate.now().plusDays(1));
+    }
+
+    @Test
+    @DisplayName("deve lançar exceção ao convidar com role OWNER")
+    void shouldThrowWhenInvitingWithOwnerRole() {
+        NewInviteData ownerData = new NewInviteRequest("novo@test.com", 7, Role.OWNER);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, admin))
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
+        when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
+                .thenReturn(false);
+
+        assertThatThrownBy(() -> generateNewInvite.execute(1L, admin, ownerData))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(inviteRepository, never()).save(any(Invite.class));
+    }
 }

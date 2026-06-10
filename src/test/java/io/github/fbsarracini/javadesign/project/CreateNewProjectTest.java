@@ -130,4 +130,30 @@ class CreateNewProjectTest {
         assertThatThrownBy(() -> createNewProject.execute(1L, member, request))
                 .isInstanceOf(ForbiddenException.class);
     }
+
+    @Test
+    @DisplayName("deve lançar exceção quando nome do projeto é vazio")
+    void shouldThrowWhenProjectNameIsBlank() {
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, member))
+                .thenReturn(Optional.of(membershipAs(account, member, Role.MEMBER)));
+        NewProjectData blankRequest = new NewProjectRequest("");
+
+        assertThatThrownBy(() -> createNewProject.execute(1L, member, blankRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("obrigatório");
+    }
+
+    @Test
+    @DisplayName("deve lançar exceção quando nome do projeto é nulo")
+    void shouldThrowWhenProjectNameIsNull() {
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, member))
+                .thenReturn(Optional.of(membershipAs(account, member, Role.MEMBER)));
+        NewProjectData nullRequest = new NewProjectRequest(null);
+
+        assertThatThrownBy(() -> createNewProject.execute(1L, member, nullRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("obrigatório");
+    }
 }

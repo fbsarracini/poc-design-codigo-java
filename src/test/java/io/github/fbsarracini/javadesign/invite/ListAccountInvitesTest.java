@@ -113,4 +113,19 @@ class ListAccountInvitesTest {
         assertThatThrownBy(() -> listAccountInvites.execute(1L, member))
                 .isInstanceOf(ForbiddenException.class);
     }
+
+    @Test
+    @DisplayName("deve retornar lista vazia quando não há convites pendentes")
+    void shouldReturnEmptyListWhenNoPendingInvites() {
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, admin))
+                .thenReturn(Optional.of(membershipAs(account, admin, Role.ADMIN)));
+        when(inviteRepository.findByAccountAndStatusAndExpirationDateGreaterThanEqual(
+                eq(account), eq(InviteStatus.PENDING), eq(LocalDate.now())))
+                .thenReturn(List.of());
+
+        List<InviteSummaryResponse> result = listAccountInvites.execute(1L, admin);
+
+        assertThat(result).isEmpty();
+    }
 }

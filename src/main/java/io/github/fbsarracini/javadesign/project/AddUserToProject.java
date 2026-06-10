@@ -48,7 +48,6 @@ public class AddUserToProject {
                     return new ForbiddenException();
                 });
 
-        AppLog.logger(log).who(loggedUser).does("adicionar usuário ao projeto").on("target=" + targetEmail).debug();
         User targetUser = userRepository.findByEmail(targetEmail)
                 .orElseThrow(NotFoundException::new);
 

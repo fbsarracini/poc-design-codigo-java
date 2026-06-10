@@ -21,11 +21,9 @@ public class ListMyAccounts {
 
     public List<AccountSummaryResponse> execute(User loggedUser) {
         AppLog.logger(log).who(loggedUser).does("listar contas").info();
-        List<AccountSummaryResponse> result = membershipRepository.findByUser(loggedUser)
+        return membershipRepository.findByUser(loggedUser)
                 .stream()
                 .map(AccountSummaryResponse::of)
                 .toList();
-        AppLog.logger(log).who(loggedUser).does("listar contas").info();
-        return result;
     }
 }

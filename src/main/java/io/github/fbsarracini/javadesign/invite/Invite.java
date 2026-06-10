@@ -61,6 +61,15 @@ public class Invite {
         this.status = InviteStatus.PENDING;
     }
 
+    Invite(String email, LocalDate expirationDate, Account account, Role role, InviteStatus status) {
+        this.email = email;
+        this.expirationDate = expirationDate;
+        this.account = account;
+        this.role = role;
+        this.status = status;
+        this.token = UUID.randomUUID().toString();
+    }
+
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public LocalDate getExpirationDate() { return expirationDate; }

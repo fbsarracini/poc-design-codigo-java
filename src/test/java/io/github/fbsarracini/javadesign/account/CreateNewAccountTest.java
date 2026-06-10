@@ -63,4 +63,24 @@ class CreateNewAccountTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("obrigatório");
     }
+
+    @Test
+    @DisplayName("deve lançar exceção quando nome da organização é nulo")
+    void shouldThrowWhenOrganizationNameIsNull() {
+        NewAccountRequest request = new NewAccountRequest(null);
+
+        assertThatThrownBy(() -> createNewAccount.execute(owner, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("obrigatório");
+    }
+
+    @Test
+    @DisplayName("deve lançar exceção quando nome da organização é apenas espaços")
+    void shouldThrowWhenOrganizationNameIsWhitespace() {
+        NewAccountRequest request = new NewAccountRequest("   ");
+
+        assertThatThrownBy(() -> createNewAccount.execute(owner, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("obrigatório");
+    }
 }

@@ -73,4 +73,17 @@ class ListAccountMembersTest {
         assertThatThrownBy(() -> listAccountMembers.execute(1L, user))
                 .isInstanceOf(ForbiddenException.class);
     }
+
+    @Test
+    @DisplayName("deve retornar apenas o próprio usuário quando é o único membro")
+    void shouldReturnOnlyUserWhenSoleMember() {
+        Membership m = membershipAs(account, user, Role.OWNER);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, user)).thenReturn(Optional.of(m));
+        when(membershipRepository.findByAccount(account)).thenReturn(List.of(m));
+
+        List<MemberSummaryResponse> result = listAccountMembers.execute(1L, user);
+
+        assertThat(result).hasSize(1);
+    }
 }

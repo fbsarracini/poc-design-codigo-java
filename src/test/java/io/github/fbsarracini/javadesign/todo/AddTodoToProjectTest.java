@@ -172,4 +172,28 @@ class AddTodoToProjectTest {
 
         assertThat(result.isCompleted()).isFalse();
     }
+
+    @Test
+    @DisplayName("deve lançar exceção quando título da tarefa é vazio")
+    void shouldThrowWhenTitleIsBlank() {
+        NewTodoData request = new NewTodoRequest("", null, null, false);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMembershipRepository.existsByProjectAndUser(project, actor)).thenReturn(true);
+
+        assertThatThrownBy(() -> addTodoToProject.execute(1L, actor, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("título");
+    }
+
+    @Test
+    @DisplayName("deve lançar exceção quando título da tarefa é nulo")
+    void shouldThrowWhenTitleIsNull() {
+        NewTodoData request = new NewTodoRequest(null, null, null, false);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMembershipRepository.existsByProjectAndUser(project, actor)).thenReturn(true);
+
+        assertThatThrownBy(() -> addTodoToProject.execute(1L, actor, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("título");
+    }
 }

@@ -152,4 +152,18 @@ class CompleteTodoTest {
         assertThatThrownBy(() -> completeTodo.execute(1L, memberUser))
                 .isInstanceOf(ForbiddenException.class);
     }
+
+    @Test
+    @DisplayName("deve lançar exceção ao completar tarefa já completa")
+    void shouldThrowWhenTodoAlreadyCompleted() {
+        todo.complete();
+        when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
+        when(projectMembershipRepository.existsByProjectAndUser(project, assignee)).thenReturn(true);
+        when(membershipRepository.findByAccountAndUser(account, assignee))
+                .thenReturn(Optional.of(membershipAs(account, assignee, Role.MEMBER)));
+
+        assertThatThrownBy(() -> completeTodo.execute(1L, assignee))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("completo");
+    }
 }

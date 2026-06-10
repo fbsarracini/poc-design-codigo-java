@@ -89,6 +89,19 @@ class CompleteTodoTest {
     }
 
     @Test
+    void shouldCompleteWhenActorIsOwner() {
+        User ownerUser = new User("Owner", "owner@test.com", "hash");
+        when(todoRepository.findById(1L)).thenReturn(Optional.of(todo));
+        when(projectMembershipRepository.existsByProjectAndUser(project, ownerUser)).thenReturn(true);
+        when(membershipRepository.findByAccountAndUser(account, ownerUser))
+                .thenReturn(Optional.of(new Membership(account, ownerUser, Role.OWNER)));
+
+        completeTodo.execute(1L, ownerUser);
+
+        assertTrue(todo.isCompleted());
+    }
+
+    @Test
     void shouldThrowWhenTodoNotFound() {
         when(todoRepository.findById(99L)).thenReturn(Optional.empty());
 

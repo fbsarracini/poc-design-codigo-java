@@ -9,7 +9,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,33 +20,40 @@ class CreateNewAccountTest {
 
     @Mock private AccountRepository accountRepository;
     @Mock private MembershipRepository membershipRepository;
-    @Mock private NewAccountData newAccountData;
 
     @InjectMocks private CreateNewAccount createNewAccount;
 
     private User owner;
-    private Account account;
 
     @BeforeEach
     void setUp() {
         owner = new User("Owner", "owner@test.com", "hash");
-        account = new Account("Minha Conta");
-        when(newAccountData.toNewAccount()).thenReturn(account);
-        when(accountRepository.save(account)).thenReturn(account);
     }
 
     @Test
     void shouldCreateAccountAndAddOwnerMembership() {
-        Account result = createNewAccount.execute(owner, newAccountData);
+        NewAccountRequest request = new NewAccountRequest("Minha Conta");
+        when(accountRepository.save(any(Account.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        assertEquals(account, result);
-        verify(accountRepository).save(account);
+        Account result = createNewAccount.execute(owner, request);
+
+        assertThat(result.getName()).isEqualTo("Minha Conta");
+        verify(accountRepository).save(any(Account.class));
 
         ArgumentCaptor<Membership> captor = ArgumentCaptor.forClass(Membership.class);
         verify(membershipRepository).save(captor.capture());
         Membership saved = captor.getValue();
-        assertEquals(account, saved.getAccount());
-        assertEquals(owner, saved.getUser());
-        assertEquals(Role.OWNER, saved.getRole());
+        assertThat(saved.getAccount()).isSameAs(result);
+        assertThat(saved.getUser()).isEqualTo(owner);
+        assertThat(saved.getRole()).isEqualTo(Role.OWNER);
+    }
+
+    @Test
+    void shouldThrowWhenOrganizationNameIsBlank() {
+        NewAccountRequest request = new NewAccountRequest("");
+
+        assertThatThrownBy(() -> createNewAccount.execute(owner, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("obrigatório");
     }
 }

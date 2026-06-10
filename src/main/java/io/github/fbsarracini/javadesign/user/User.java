@@ -25,6 +25,7 @@ public class User implements UserDetails {
 
     private String password;
 
+    @Deprecated
     public User() {}
 
     public User(String name, String email, String password) {

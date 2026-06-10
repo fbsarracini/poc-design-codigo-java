@@ -11,6 +11,7 @@ import io.github.fbsarracini.javadesign.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -32,55 +34,58 @@ class GenerateNewInviteTest {
     @Mock private AccountRepository accountRepository;
     @Mock private MembershipRepository membershipRepository;
     @Mock private InviteRepository inviteRepository;
-    @Mock private NewInviteData newInviteData;
 
     @InjectMocks private GenerateNewInvite generateNewInvite;
 
     private User admin;
     private User owner;
     private User member;
+    private User client;
     private Account account;
+    private NewInviteData newInviteData;
 
     @BeforeEach
     void setUp() {
         admin = new User("Admin", "admin@test.com", "hash");
         owner = new User("Owner", "owner@test.com", "hash");
         member = new User("Member", "member@test.com", "hash");
+        client = new User("Client", "client@test.com", "hash");
         account = new Account("Conta Teste");
+        newInviteData = new NewInviteRequest("novo@test.com", 7, Role.MEMBER);
     }
 
     @Test
     void shouldGenerateInviteWhenAdminAndNoPendingInvite() {
-        Invite invite = new Invite("novo@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
-        when(newInviteData.email()).thenReturn("novo@test.com");
-        when(newInviteData.toNewInvite(account)).thenReturn(invite);
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))
                 .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
         when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
-                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), any(LocalDate.class)))
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
                 .thenReturn(false);
 
         generateNewInvite.execute(1L, admin, newInviteData);
 
-        verify(inviteRepository).save(invite);
+        ArgumentCaptor<Invite> captor = ArgumentCaptor.forClass(Invite.class);
+        verify(inviteRepository).save(captor.capture());
+        assertThat(captor.getValue().getEmail()).isEqualTo("novo@test.com");
+        assertThat(captor.getValue().getRole()).isEqualTo(Role.MEMBER);
     }
 
     @Test
     void shouldGenerateInviteWhenOwnerAndNoPendingInvite() {
-        Invite invite = new Invite("novo@test.com", LocalDate.now().plusDays(7), account, Role.MEMBER);
-        when(newInviteData.email()).thenReturn("novo@test.com");
-        when(newInviteData.toNewInvite(account)).thenReturn(invite);
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, owner))
                 .thenReturn(Optional.of(new Membership(account, owner, Role.OWNER)));
         when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
-                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), any(LocalDate.class)))
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
                 .thenReturn(false);
 
         generateNewInvite.execute(1L, owner, newInviteData);
 
-        verify(inviteRepository).save(invite);
+        ArgumentCaptor<Invite> captor = ArgumentCaptor.forClass(Invite.class);
+        verify(inviteRepository).save(captor.capture());
+        assertThat(captor.getValue().getEmail()).isEqualTo("novo@test.com");
+        assertThat(captor.getValue().getRole()).isEqualTo(Role.MEMBER);
     }
 
     @Test
@@ -104,13 +109,36 @@ class GenerateNewInviteTest {
     }
 
     @Test
+    void shouldThrowForbiddenWhenClientCannotInvite() {
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, client))
+                .thenReturn(Optional.of(new Membership(account, client, Role.CLIENT)));
+
+        assertThatThrownBy(() -> generateNewInvite.execute(1L, client, newInviteData))
+                .isInstanceOf(ForbiddenException.class);
+
+        verifyNoInteractions(inviteRepository);
+    }
+
+    @Test
+    void shouldThrowForbiddenWhenUserHasNoMembership() {
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(membershipRepository.findByAccountAndUser(account, admin))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> generateNewInvite.execute(1L, admin, newInviteData))
+                .isInstanceOf(ForbiddenException.class);
+
+        verifyNoInteractions(inviteRepository);
+    }
+
+    @Test
     void shouldThrowWhenPendingInviteAlreadyExists() {
-        when(newInviteData.email()).thenReturn("novo@test.com");
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(membershipRepository.findByAccountAndUser(account, admin))
                 .thenReturn(Optional.of(new Membership(account, admin, Role.ADMIN)));
         when(inviteRepository.existsByAccountAndEmailAndStatusAndExpirationDateGreaterThanEqual(
-                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), any(LocalDate.class)))
+                eq(account), eq("novo@test.com"), eq(InviteStatus.PENDING), eq(LocalDate.now())))
                 .thenReturn(true);
 
         assertThatThrownBy(() -> generateNewInvite.execute(1L, admin, newInviteData))

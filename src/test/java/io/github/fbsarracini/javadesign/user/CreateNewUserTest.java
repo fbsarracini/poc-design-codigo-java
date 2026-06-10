@@ -10,10 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,31 +20,40 @@ class CreateNewUserTest {
 
     @Mock private UserRepository userRepository;
     @Mock private PasswordEncoder passwordEncoder;
-    @Mock private NewUserData newUserData;
 
     @InjectMocks private CreateNewUser createNewUser;
 
     @Test
     void shouldCreateUserWhenEmailNotRegistered() {
-        User expected = new User("João", "joao@test.com", "encoded");
-        when(newUserData.getEmail()).thenReturn("joao@test.com");
+        NewUserRequest request = new NewUserRequest("João", "joao@test.com", "senha_longa_123");
         when(userRepository.findByEmail("joao@test.com")).thenReturn(Optional.empty());
-        when(newUserData.toNewUser(passwordEncoder)).thenReturn(expected);
-        when(userRepository.save(expected)).thenReturn(expected);
+        when(passwordEncoder.encode("senha_longa_123")).thenReturn("encoded");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        User result = createNewUser.execute(newUserData);
+        User result = createNewUser.execute(request);
 
-        assertEquals(expected, result);
-        verify(userRepository).save(expected);
+        assertThat(result.getName()).isEqualTo("João");
+        assertThat(result.getUsername()).isEqualTo("joao@test.com");
     }
 
     @Test
     void shouldThrowWhenEmailAlreadyRegistered() {
+        NewUserRequest request = new NewUserRequest("João", "joao@test.com", "senha_longa_123");
         User existing = new User("Existente", "joao@test.com", "hash");
-        when(newUserData.getEmail()).thenReturn("joao@test.com");
         when(userRepository.findByEmail("joao@test.com")).thenReturn(Optional.of(existing));
 
-        assertThatThrownBy(() -> createNewUser.execute(newUserData))
+        assertThatThrownBy(() -> createNewUser.execute(request))
                 .isInstanceOf(UnprocessableException.class);
+    }
+
+    @Test
+    void shouldThrowWhenUserNameIsBlank() {
+        NewUserRequest request = new NewUserRequest("", "joao@test.com", "senha_longa_123");
+        when(userRepository.findByEmail("joao@test.com")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("senha_longa_123")).thenReturn("encoded");
+
+        assertThatThrownBy(() -> createNewUser.execute(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("nome");
     }
 }

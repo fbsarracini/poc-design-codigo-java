@@ -37,6 +37,34 @@ class UserTest {
     }
 
     @Test
+    void shouldThrowWhenNameIsNull() {
+        assertThatThrownBy(() -> new User(null, "joao@test.com", "senha123"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("nome");
+    }
+
+    @Test
+    void shouldThrowWhenEmailIsNull() {
+        assertThatThrownBy(() -> new User("João", null, "senha123"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("email");
+    }
+
+    @Test
+    void shouldThrowWhenPasswordIsNull() {
+        assertThatThrownBy(() -> new User("João", "joao@test.com", null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("senha");
+    }
+
+    @Test
+    void shouldThrowWhenNameIsWhitespace() {
+        assertThatThrownBy(() -> new User("   ", "joao@test.com", "senha123"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("nome");
+    }
+
+    @Test
     void shouldConsiderUsersEqualByEmail() {
         User a = new User("João", "joao@test.com", "hash1");
         User b = new User("João Silva", "joao@test.com", "hash2");

@@ -54,6 +54,7 @@ public class AddTodoToProject {
                     return userRepository.findById(id).orElseThrow(NotFoundException::new);
                 });
 
+        AppLog.logger(log).who(loggedUser).does("adicionar todo").on("project=" + projectId).info();
         Todo todo = todoRepository.save(
                 assignee.map(user -> newTodoData.toNewTodo(project, user))
                         .orElseGet(() -> newTodoData.toNewTodo(project)));

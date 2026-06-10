@@ -42,7 +42,9 @@ public class AcceptInvite {
             throw e;
         }
 
+        AppLog.logger(log).who(loggedUser).does("aceitar convite").on("invite=" + invite.getId()).info();
         inviteRepository.save(invite);
+        AppLog.logger(log).who(loggedUser).does("aceitar convite membership").on("account=" + invite.getAccount().getId()).info();
         membershipRepository.save(membership);
         AppLog.logger(log).who(loggedUser).does("aceitar convite").on("account=" + invite.getAccount().getId()).info();
     }

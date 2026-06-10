@@ -39,6 +39,7 @@ public class RevokeInvite {
                 });
 
         invite.revoke();
+        AppLog.logger(log).who(loggedUser).does("revogar convite").on("invite=" + inviteId).info();
         inviteRepository.save(invite);
         AppLog.logger(log).who(loggedUser).does("revogar convite").on("invite=" + inviteId).info();
     }

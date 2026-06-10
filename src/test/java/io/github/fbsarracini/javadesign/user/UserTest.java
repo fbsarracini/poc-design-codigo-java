@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class UserTest {
 
@@ -80,5 +81,21 @@ class UserTest {
         User b = new User("João Silva", "joao@test.com", "hash2");
 
         assertEquals(a, b);
+    }
+
+    @Test
+    @DisplayName("deve retornar false ao comparar com null")
+    void shouldReturnFalseWhenComparingWithNull() {
+        User user = new User("João", "joao@test.com", "hash");
+
+        assertFalse(user.equals(null));
+    }
+
+    @Test
+    @DisplayName("deve retornar false ao comparar com objeto de classe diferente")
+    void shouldReturnFalseWhenComparingWithDifferentClass() {
+        User user = new User("João", "joao@test.com", "hash");
+
+        assertFalse(user.equals("joao@test.com"));
     }
 }

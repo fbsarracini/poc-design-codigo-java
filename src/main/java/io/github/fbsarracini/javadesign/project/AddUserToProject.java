@@ -57,6 +57,7 @@ public class AddUserToProject {
         }
 
         if (!projectMembershipRepository.existsByProjectAndUser(project, targetUser)) {
+            AppLog.logger(log).who(loggedUser).does("adicionar usuário ao projeto").on("project=" + projectId + " target=" + targetEmail).info();
             projectMembershipRepository.save(new ProjectMembership(project, targetUser));
             AppLog.logger(log).who(loggedUser).does("adicionar usuário ao projeto").on("project=" + projectId + " target=" + targetEmail).info();
         }

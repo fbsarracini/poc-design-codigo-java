@@ -53,6 +53,7 @@ public class CompleteTodo {
         }
 
         todo.complete();
+        AppLog.logger(log).who(actor).does("completar todo").on("todo=" + todoId).info();
         todoRepository.save(todo);
         AppLog.logger(log).who(actor).does("completar todo").on("todo=" + todoId).info();
     }

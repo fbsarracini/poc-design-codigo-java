@@ -53,6 +53,7 @@ public class GenerateNewInvite {
             throw new IllegalArgumentException("já existe um convite pendente para este email");
         }
 
+        AppLog.logger(log).who(loggedUser).does("gerar convite").on("account=" + accountId + " email=" + newInviteData.email()).info();
         inviteRepository.save(newInviteData.toNewInvite(account));
         AppLog.logger(log).who(loggedUser).does("gerar convite").on("account=" + accountId + " email=" + newInviteData.email()).info();
     }

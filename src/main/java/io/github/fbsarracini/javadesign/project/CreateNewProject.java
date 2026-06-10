@@ -48,7 +48,9 @@ public class CreateNewProject {
                     return new ForbiddenException();
                 });
 
+        AppLog.logger(log).who(loggedUser).does("criar projeto").on("account=" + accountId).info();
         Project project = projectRepository.save(newProjectData.toNewProject(account));
+        AppLog.logger(log).who(loggedUser).does("criar projeto membership").on("project=" + project.getId()).info();
         projectMembershipRepository.save(new ProjectMembership(project, loggedUser));
         AppLog.logger(log).who(loggedUser).does("criar projeto").on("project=" + project.getId() + " account=" + accountId).info();
         return project;
